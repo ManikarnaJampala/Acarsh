@@ -19,7 +19,7 @@ import * as sql from "mssql";
 const config: sql.config = {
   user: "sa",
   password: "root",
-  server: 'DESKTOP-G6ITRLJ',
+  server: 'localhost',
   database: "Acarsh_db",
   options: {
     encrypt: false,

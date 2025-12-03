@@ -14,8 +14,8 @@
     "jspdf": "^3.0.3",
     "mysql2": "^3.15.3",
     "next": "^14.2.33",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-redux": "^8.1.1",
     "react-router-dom": "^7.9.6"
   },

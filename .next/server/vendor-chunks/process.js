@@ -16,7 +16,7 @@ exports.modules = {
   \****************************************/
 /***/ ((module) => {
 
-eval("// for now just expose the builtin process global from node.js\nmodule.exports = global.process;\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi4vbm9kZV9tb2R1bGVzL3Byb2Nlc3MvaW5kZXguanMiLCJtYXBwaW5ncyI6IkFBQUE7QUFDQSIsInNvdXJjZXMiOlsid2VicGFjazovL25leHRqcy10eXBlc2NyaXB0LXJlZHV4LXNhbXBsZS8uLi9ub2RlX21vZHVsZXMvcHJvY2Vzcy9pbmRleC5qcz8yYWJhIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIGZvciBub3cganVzdCBleHBvc2UgdGhlIGJ1aWx0aW4gcHJvY2VzcyBnbG9iYWwgZnJvbSBub2RlLmpzXG5tb2R1bGUuZXhwb3J0cyA9IGdsb2JhbC5wcm9jZXNzO1xuIl0sIm5hbWVzIjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/../node_modules/process/index.js\n");
+eval("// for now just expose the builtin process global from node.js\nmodule.exports = global.process;\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi4vbm9kZV9tb2R1bGVzL3Byb2Nlc3MvaW5kZXguanMiLCJtYXBwaW5ncyI6IkFBQUE7QUFDQSIsInNvdXJjZXMiOlsid2VicGFjazovL25leHRqcy10eXBlc2NyaXB0LXJlZHV4LXNhbXBsZS8uLi9ub2RlX21vZHVsZXMvcHJvY2Vzcy9pbmRleC5qcz9kYTJhIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIGZvciBub3cganVzdCBleHBvc2UgdGhlIGJ1aWx0aW4gcHJvY2VzcyBnbG9iYWwgZnJvbSBub2RlLmpzXG5tb2R1bGUuZXhwb3J0cyA9IGdsb2JhbC5wcm9jZXNzO1xuIl0sIm5hbWVzIjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/../node_modules/process/index.js\n");
 
 /***/ })
 
