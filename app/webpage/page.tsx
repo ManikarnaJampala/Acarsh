@@ -10,8 +10,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AddLeadPage from "./leads/page";
 
-
-
 // Tabs
 type TabKey = "home" | "dashboard" | "leads" | "addLead" | "Prospect" | "Account" | "Remainder";
 
@@ -19,9 +17,12 @@ export default function HelloPage(): JSX.Element {
   const dispatch = useDispatch();
   const router = useRouter();
 
+  // user (for welcome text)
   const user = useSelector(
     (s: RootState) => (s as any).user ?? (s as any).auth?.user ?? null
   );
+
+  // employees from store (fallback)
   const employeesFromStore = useSelector(
     (s: RootState) => (s as any).employees ?? []
   );
@@ -36,28 +37,29 @@ export default function HelloPage(): JSX.Element {
 
   const tabIcons: Record<TabKey, React.ReactNode> = {
     home: "",
-    dashboard: (<Image src="/dashboard1.png" alt="Dashboard" width={20} height={20} />),
-    leads: (<Image src="/group.png" alt="Dashboard" width={20} height={20} />),
-    Prospect: (<Image src="/prospect.png" alt="Dashboard" width={20} height={20} />),
-    Account: (<Image src="/account.png" alt="Dashboard" width={20} height={20} />),
-    Remainder: (<Image src="/bell.png" alt="Dashboard" width={20} height={20} />),
+    dashboard: <Image src="/dashboard1.png" alt="Dashboard" width={20} height={20} />,
+    leads: <Image src="/group.png" alt="Leads" width={20} height={20} />,
+    Prospect: <Image src="/prospect.png" alt="Prospect" width={20} height={20} />,
+    Account: <Image src="/account.png" alt="Account" width={20} height={20} />,
+    Remainder: <Image src="/bell.png" alt="Remainder" width={20} height={20} />,
     addLead: ""
   };
 
+  // ---- API CALLS ----
 
-  // fetch leads
-  const fetchList = async () => {
+  const fetchLeadsList = async () => {
     try {
       setError(null);
       setLoading(true);
-      const res = await fetch("/api/employees");
+
+      const res = await fetch("/api/employees/leads");
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
       const data: Employee[] = await res.json();
       dispatch(setEmployees(data));
-
       setEmployeesLocal(data);
     } catch (err: any) {
-      console.error("Error fetching employees:", err);
+      console.error("Error fetching leads:", err);
       setError(err?.message ?? "Unknown error");
       setEmployeesLocal([]);
     } finally {
@@ -65,30 +67,81 @@ export default function HelloPage(): JSX.Element {
     }
   };
 
+  const fetchProspectsList = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const res = await fetch("/api/employees/prospects");
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
+      const data: Employee[] = await res.json();
+      dispatch(setEmployees(data));
+      setEmployeesLocal(data);
+    } catch (err: any) {
+      console.error("Error fetching prospects:", err);
+      setError(err?.message ?? "Unknown error");
+      setEmployeesLocal([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const fetchAccountList = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const res = await fetch("/api/employees/account");
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
+      const data: Employee[] = await res.json();
+      dispatch(setEmployees(data));
+      setEmployeesLocal(data);
+    } catch (err: any) {
+      console.error("Error fetching prospects:", err);
+      setError(err?.message ?? "Unknown error");
+      setEmployeesLocal([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---- TAB HANDLER (single function) ----
+
   async function handleTab(tab: TabKey) {
     setActiveTab(tab);
+
     if (tab === "leads") {
-      await fetchList();
-    }
+      await fetchLeadsList();
+    } else if (tab === "Prospect") {
+      await fetchProspectsList();
+    } else if (tab === "Account") {
+      await fetchAccountList();
+    } 
+    // "Account" & others can get their own fetch later
   }
 
   function handleLogout() {
     dispatch(clearUser());
+    localStorage.removeItem("user");
+    router.push("/");
   }
 
   function toggleSidebar() {
     setSidebarCollapsed((prev) => !prev);
   }
 
+  // ---- RENDER CONTENT ----
+
   const renderContent = () => {
     switch (activeTab) {
       case "home":
         return (
-          <>
-            <h1 style={{ margin: 0, textAlign: "center", fontWeight: 300 }}>
-              Welcome{user?.name ? `, ${user.name}` : ""}{" "}
-            </h1>
-          </>
+          <h1 style={{ margin: 0, textAlign: "center", fontWeight: 300 }}>
+            Welcome{user?.name ? `, ${user.name}` : ""}{" "}
+          </h1>
         );
 
       case "dashboard":
@@ -101,50 +154,44 @@ export default function HelloPage(): JSX.Element {
 
       case "leads":
         return (
-          <>
+          <EmployeeList
+            employees={employeesLocal ?? employeesFromStore}
+            loading={loading}
+            error={error}
+            onAddLead={() => setActiveTab("addLead")}
+          />
+        );
 
-            <EmployeeList
-              employees={employeesLocal ?? employeesFromStore}
-              loading={loading}
-              error={error}
-              onAddLead={() => setActiveTab("addLead")}
-            />
-          </>
+      case "Prospect":
+
+        return (
+          <EmployeeList
+            employees={employeesLocal ?? employeesFromStore}
+            loading={loading}
+            error={error}
+            onAddLead={() => setActiveTab("addLead")}
+          />
+        );
+
+      case "Account":
+        return (
+          <EmployeeList
+            employees={employeesLocal ?? employeesFromStore}
+            loading={loading}
+            error={error}
+            onAddLead={() => setActiveTab("addLead")}
+          />
         );
 
       case "addLead":
         return <AddLeadPage onBack={() => setActiveTab("leads")} />;
 
-
-
-      case "Prospect":
-        return (
-          <>
-            <EmployeeList
-              employees={employeesLocal ?? employeesFromStore}
-              loading={loading}
-              error={error}
-              onAddLead={() => setActiveTab("addLead")}
-            />
-          </>
-        );
-
-      case "Account":
-        return (
-          <>
-            <EmployeeList
-              employees={employeesLocal ?? employeesFromStore}
-              loading={loading}
-              error={error}
-              onAddLead={() => setActiveTab("addLead")}
-            />
-          </>
-        );
-
       default:
         return null;
     }
   };
+
+  // ---- LAYOUT ----
 
   return (
     <div
@@ -156,7 +203,7 @@ export default function HelloPage(): JSX.Element {
         background: "#f3f4f6",
       }}
     >
-      {/* LEFT SIDEBAR   "#fff"*/}
+      {/* LEFT SIDEBAR */}
       <aside
         style={{
           width: sidebarCollapsed ? 64 : 260,
@@ -174,7 +221,6 @@ export default function HelloPage(): JSX.Element {
           boxSizing: "border-box",
         }}
       >
-
         {/* LOGO — visible ONLY when NOT collapsed */}
         {!sidebarCollapsed && (
           <>
@@ -183,9 +229,7 @@ export default function HelloPage(): JSX.Element {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: 0,
                 marginBottom: 8,
-                boxSizing: "border-box",
               }}
             >
               <div
@@ -216,7 +260,6 @@ export default function HelloPage(): JSX.Element {
               </div>
             </div>
 
-            {/* Divider under logo */}
             <div
               style={{
                 height: 0,
@@ -240,7 +283,7 @@ export default function HelloPage(): JSX.Element {
               marginTop: sidebarCollapsed ? 70 : 20,
             }}
           >
-            {(["dashboard", "leads", "Prospect", "Account", "Remainder",] as TabKey[]).map(
+            {(["dashboard", "leads", "Prospect", "Account", "Remainder"] as TabKey[]).map(
               (tab) => {
                 const label = tab[0].toUpperCase() + tab.slice(1);
                 const active = activeTab === tab;
@@ -259,7 +302,6 @@ export default function HelloPage(): JSX.Element {
                         padding: sidebarCollapsed ? "10px 6px" : "10px 14px",
                         borderRadius: 8,
                         border: "none",
-                        boxSizing: "border-box",
                         cursor: "pointer",
                         background: active ? "#1e53d7" : "#f7f7f7",
                         color: active ? "#fff" : "#111",
@@ -281,7 +323,6 @@ export default function HelloPage(): JSX.Element {
                         {icon}
                       </span>
 
-                      {/* Label hidden when collapsed */}
                       {!sidebarCollapsed && (
                         <span
                           style={{
@@ -302,15 +343,10 @@ export default function HelloPage(): JSX.Element {
           </ul>
         </nav>
 
-        {/* Optional footer */}
         {!sidebarCollapsed && (
-          <div style={{ marginTop: 20, fontSize: 13, color: "#666" }}>
-            {/* Add user info here later */}
-          </div>
+          <div style={{ marginTop: 20, fontSize: 13, color: "#666" }}></div>
         )}
-
       </aside>
-
 
       {/* RIGHT SIDE */}
       <main
@@ -327,7 +363,6 @@ export default function HelloPage(): JSX.Element {
             width: "100%",
             height: 60,
             backgroundColor: "#3a77e3",
-
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -337,7 +372,7 @@ export default function HelloPage(): JSX.Element {
             boxSizing: "border-box",
           }}
         >
-          {/* Semi-circular toggle OUTSIDE the bar (left) */}
+          {/* Sidebar toggle */}
           <div
             onClick={toggleSidebar}
             style={{
@@ -354,7 +389,6 @@ export default function HelloPage(): JSX.Element {
               justifyContent: "center",
               cursor: "pointer",
               boxShadow: "0 0 4px rgba(0,0,0,0.25)",
-              flexShrink: 0,
               zIndex: 1000,
             }}
           >
@@ -370,7 +404,6 @@ export default function HelloPage(): JSX.Element {
             </span>
           </div>
 
-          {/* Title */}
           <div
             style={{
               fontWeight: 600,
@@ -383,14 +416,8 @@ export default function HelloPage(): JSX.Element {
             ACARsh
           </div>
 
-
-          {/* Logout Button */}
           <button
-            onClick={() => {
-              dispatch(clearUser());
-              localStorage.removeItem("user");
-              router.push("/");
-            }}
+            onClick={handleLogout}
             style={{
               padding: "5px 10px",
               borderRadius: 6,
@@ -400,7 +427,7 @@ export default function HelloPage(): JSX.Element {
               cursor: "pointer",
               fontWeight: 600,
               fontSize: 13,
-              marginRight: 20
+              marginRight: 20,
             }}
           >
             Logout
@@ -408,13 +435,7 @@ export default function HelloPage(): JSX.Element {
         </div>
 
         {/* CONTENT BODY */}
-        <div
-          style={{
-            padding: 20,
-          }}
-        >
-          {renderContent()}
-        </div>
+        <div style={{ padding: 20 }}>{renderContent()}</div>
       </main>
     </div>
   );

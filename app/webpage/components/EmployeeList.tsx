@@ -11,13 +11,16 @@ export type Contact = {
 
 export type Employee = {
     LeadId: number | string;
+
     CompanyName: string;
     CompanyLocation: string;
     LeadSource: string;
     LeadDate: string | number | Date;
     LeadNotes: string | null;
+
     StatusName: string | null;
     OwnerName: string | null;
+
     Contacts: Contact[];
 };
 
@@ -29,12 +32,22 @@ type Props = {
     onAddLead: () => void;
 };
 
-export default function EmployeeList({ employees, loading, error, onDelete, onAddLead }: Props) {
+export default function EmployeeList({
+    employees,
+    loading,
+    error,
+    onDelete,
+    onAddLead,
+}: Props) {
     const router = useRouter();
-    const [query, setQuery] = useState("")
+    const [query, setQuery] = useState("");
+
+    // Normalize employees prop to a plain array (support wrapper shapes like { data: [...] })
     const employeesList: Employee[] = Array.isArray(employees)
         ? employees
-        : employees && (employees as any).data && Array.isArray((employees as any).data)
+        : employees &&
+            (employees as any).data &&
+            Array.isArray((employees as any).data)
             ? (employees as any).data
             : [];
 
@@ -65,7 +78,7 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
         });
     }, [employeesList, query]);
 
-    if (loading) return <div>Loading leads...</div>;
+    //   if (loading) return <div>Loading leads...</div>;
     if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
     if (employeesList.length === 0) return <div>No leads found.</div>;
 
@@ -79,6 +92,7 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                 overflow: "hidden",
             }}
         >
+            {/* --------------------------------------------- */}
             {/* ---------- Top bar: Add Lead + Search ---------- */}
             <div
                 style={{
@@ -98,8 +112,9 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                         padding: "7px 12px",
                         border: "none",
                         borderRadius: 6,
-                        fontSize: 15,
+                        fontSize: 13,
                         cursor: "pointer",
+                        fontWeight: "bold"
                     }}
                 >
                     Add Lead
@@ -142,11 +157,6 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                 </div>
             </div>
 
-
-
-
-
-
             {/* --------------------------------------------- */}
             <div style={{ maxHeight: 480, overflowY: "auto", overflowX: "auto" }}>
                 <table
@@ -155,8 +165,7 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                         borderCollapse: "separate",
                         borderSpacing: 0,
                         minWidth: 900,
-                        fontFamily: "Segoe UI, system-ui, -apple-system, sans-serif",
-                        fontSize: 10
+                        fontFamily: "Open sans, system-ui, -apple-system, sans-serif",
                     }}
                 >
                     <thead>
@@ -181,14 +190,14 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                             return (
                                 <tr key={emp.LeadId as React.Key} style={rowStyle}>
                                     {/* Company Column */}
-                                    <td style={tdStyle}>
-                                        <div style={{ fontWeight: 600, fontSize: 14 }}>
+                                    <td style={{ ...tdStyle, verticalAlign: "middle" }}>
+                                        <div style={{ fontWeight: "bold", fontSize: 9.52, fontFamily: "sans-serif" }}>
                                             {emp.CompanyName || "—"}
                                         </div>
                                         {emp.CompanyLocation && (
                                             <div
                                                 style={{
-                                                    fontSize: 12,
+                                                    fontSize: "9.52px",
                                                     color: "#7a7f87",
                                                     marginTop: 2,
                                                     display: "flex",
@@ -196,21 +205,28 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                     gap: 4,
                                                 }}
                                             >
-                                                <span><Image src="/location.png" alt="location" width={18} height={18} /></span>
+                                                <span>
+                                                    <Image
+                                                        src="/location.png"
+                                                        alt="location"
+                                                        width={10}
+                                                        height={10}
+                                                    />
+                                                </span>
                                                 <span>{emp.CompanyLocation}</span>
                                             </div>
                                         )}
                                     </td>
 
                                     {/* Contacts Column */}
-                                    <td style={tdStyle}>
+                                    <td style={{ ...tdStyle, verticalAlign: "middle" }}>
                                         {emp.Contacts && emp.Contacts.length > 0 ? (
                                             emp.Contacts.map((c, index) => (
                                                 <div
                                                     key={index}
                                                     style={{
                                                         marginBottom: 8,
-                                                        paddingBottom: 6,
+                                                        paddingBottom: 1,
                                                         borderBottom:
                                                             index !== emp.Contacts.length - 1
                                                                 ? "1px dashed #e1e4ed"
@@ -218,12 +234,12 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                     }}
                                                 >
                                                     {/* Name + Role */}
-                                                    <div style={{ fontWeight: 500, fontSize: 13 }}>
+                                                    <div style={{ fontWeight: "bold", fontSize: "9.52px" }}>
                                                         {c.ContactName || "—"}
                                                         {c.ContactRoleName && (
                                                             <span
                                                                 style={{
-                                                                    fontSize: 12,
+                                                                    fontSize: 10,
                                                                     color: "#666",
                                                                     marginLeft: 4,
                                                                 }}
@@ -237,7 +253,7 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                     {c.ContactTitle && (
                                                         <div
                                                             style={{
-                                                                fontSize: 12,
+                                                                fontSize: "9.52px",
                                                                 color: "#555",
                                                                 marginTop: 2,
                                                             }}
@@ -250,7 +266,7 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                     {c.ContactEmail && (
                                                         <div
                                                             style={{
-                                                                fontSize: 12,
+                                                                fontSize: "9.52px",
                                                                 color: "#444",
                                                                 marginTop: 4,
                                                                 display: "flex",
@@ -258,7 +274,13 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                                 gap: 4,
                                                             }}
                                                         >
-                                                            <span><Image src="/email.png" alt="email" width={12} height={12} />
+                                                            <span>
+                                                                <Image
+                                                                    src="/email.png"
+                                                                    alt="email"
+                                                                    width={11}
+                                                                    height={11}
+                                                                />
                                                             </span>
                                                             <a
                                                                 href={`mailto:${c.ContactEmail}`}
@@ -277,7 +299,7 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                     {c.ContactPhone && (
                                                         <div
                                                             style={{
-                                                                fontSize: 12,
+                                                                fontSize: 9.52,
                                                                 color: "#444",
                                                                 marginTop: 2,
                                                                 display: "flex",
@@ -285,7 +307,13 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                                 gap: 4,
                                                             }}
                                                         >
-                                                            <span><Image src="/call.png" alt="call" width={12} height={12} />
+                                                            <span>
+                                                                <Image
+                                                                    src="/call.png"
+                                                                    alt="call"
+                                                                    width={10}
+                                                                    height={10}
+                                                                />
                                                             </span>
                                                             <a
                                                                 href={`tel:${c.ContactPhone}`}
@@ -306,19 +334,19 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                     </td>
 
                                     {/* Source */}
-                                    <td style={tdStyle}>
-                                        <div style={{ fontSize: "10px" }}>{emp.LeadSource || "—"}</div>
+                                    <td style={{ ...tdStyle, verticalAlign: "middle" }}>
+                                        <div style={{ fontSize: 9.52 }}>{emp.LeadSource || "—"}</div>
                                     </td>
 
                                     {/* Status */}
-                                    <td style={tdStyle}>
+                                    <td style={{ ...tdStyle, verticalAlign: "middle" }}>
                                         {emp.StatusName ? (
                                             <span
                                                 style={{
                                                     display: "inline-block",
                                                     padding: "2px 8px",
                                                     borderRadius: 12,
-                                                    fontSize: "10px",
+                                                    fontSize: 9.52,
                                                     fontWeight: 600,
                                                     backgroundColor: "#e4f2ff",
                                                     color: "#1f6fdc",
@@ -333,16 +361,16 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                     </td>
 
                                     {/* Info Column */}
-                                    <td style={tdStyle}>
+                                    <td style={{ ...tdStyle, verticalAlign: "middle" }}>
                                         {/* Date */}
-                                        <div style={{ fontSize: 12, marginBottom: 4 }}>
-                                            <span style={{ fontWeight: 600 }}>Date: </span>
+                                        <div style={{ fontSize: 9.52, marginBottom: 2 }}>
+                                            <span style={{ fontWeight: "bold" }}>Date: </span>
                                             {formatDate(emp.LeadDate)}
                                         </div>
 
                                         {/* Notes */}
-                                        <div style={{ fontSize: 12 }}>
-                                            <span style={{ fontWeight: 600 }}>Notes: </span>
+                                        <div style={{ fontSize: 9.52 }}>
+                                            <span style={{ fontWeight: "bold" }}>Notes: </span>
                                             {emp.LeadNotes && emp.LeadNotes.trim() !== ""
                                                 ? emp.LeadNotes
                                                 : "—"}
@@ -350,14 +378,18 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                     </td>
 
                                     {/* Owner */}
-                                    <td style={tdStyle}>
-                                        <div style={{ fontSize: 13 }}>
-                                            {emp.OwnerName || "—"}
-                                        </div>
+                                    <td style={{ ...tdStyle, verticalAlign: "middle" }}>
+                                        <div style={{ fontSize: 9.52 }}>{emp.OwnerName || "—"}</div>
                                     </td>
 
                                     {/* Actions */}
-                                    <td style={{ ...tdStyle, textAlign: "center", verticalAlign: "middle" }}>
+                                    <td
+                                        style={{
+                                            ...tdStyle,
+                                            textAlign: "center",
+                                            verticalAlign: "middle",
+                                        }}
+                                    >
                                         <button
                                             onClick={() => onDelete && onDelete(emp.LeadId)}
                                             style={{
@@ -372,11 +404,14 @@ export default function EmployeeList({ employees, loading, error, onDelete, onAd
                                                 height: "100%",
                                             }}
                                         >
-                                            <Image src="/delete.png" alt="delete" width={18} height={18} />
-
+                                            <Image
+                                                src="/delete.png"
+                                                alt="delete"
+                                                width={18}
+                                                height={18}
+                                            />
                                         </button>
                                     </td>
-
                                 </tr>
                             );
                         })}
@@ -397,9 +432,10 @@ function formatDate(value: string | number | Date) {
 const thStyle: React.CSSProperties = {
     textAlign: "left",
     padding: "8px 12px",
-    borderBottom: "1px solid #3b414d",
-    borderRight: "0.0px solid #bebbbbff",
-    borderLeft: "0.5px solid #bebbbbff",
+    //   borderBottom: "1px solid #3b414d",
+    //   borderRight: "0.0px solid #e4e9f0",
+    //   borderLeft: "0.1px solid #e4e9f0",
+    border: "1px solid rgba(184, 183, 183, 0.4)",
     fontWeight: 600,
     fontSize: 12,
     textTransform: "uppercase",
@@ -412,14 +448,13 @@ const thStyle: React.CSSProperties = {
 
 const tdStyle: React.CSSProperties = {
     padding: "10px 12px",
-    borderBottom: "1px solid #e1e4ed",
-    borderRight: "0px solid #bebbbbff",
-    borderLeft: "0.5px solid #bebbbbff",
-
+    //   borderBottom: "1px solid #e1e4ed",
+    //   borderRight: "0.01px solid #bebbbbff",
+    //   borderLeft: "0.01px solid #bebbbbff",
+    border: "1px solid rgba(145, 145, 146, 0.4)",
     verticalAlign: "top",
 };
 
 const trStyle: React.CSSProperties = {
     transition: "background-color 0.15s ease",
-    fontSize: 0,
 };
