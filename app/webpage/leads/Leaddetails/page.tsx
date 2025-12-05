@@ -25,6 +25,14 @@ type Reminder = {
   Status?: string;
   Notification?: string;
 };
+type Opportunity = {
+  CreatedDate: string;
+  Service: string;
+  Probability: string;
+  Status: string;
+  EngagementModel: string;
+};
+
 
 type Lead = {
   LeadId?: number | string;
@@ -37,6 +45,7 @@ type Lead = {
   Contacts?: Contact[];
   Activities?: Activity[];
   Reminders?: Reminder[];
+  Opportunities?: Opportunity[];
 };
 
 type LeadDetailsProps = {
@@ -54,6 +63,10 @@ export default function LeadDetailsPage({
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAddActivity, setShowAddActivity] = useState(false);
+  const [showAddReminder, setShowAddReminder] = useState(false);
+  const [showAddOpportunity, setShowAddOpportunity] = useState(false);
+
 
   // Take ID from props first, else from URL (?leadId=...)
   const leadIdFromQuery = searchParams.get("leadId");
@@ -321,6 +334,90 @@ export default function LeadDetailsPage({
     cursor: "pointer",
     boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
   };
+  const addBtn = {
+  backgroundColor: "#006AFF",
+  color: "white",
+  width: 20,
+  height: 20,
+  borderRadius: 4, 
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 14,    
+  marginLeft: 6,   
+  cursor: "pointer",
+  fontWeight: "bold",
+  border: "none",
+  lineHeight: 0,   
+};
+
+  const modalOverlay: React.CSSProperties = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  backgroundColor: "rgba(0,0,0,0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+};
+
+const modalBox: React.CSSProperties = {
+  width: 500,
+  background: "#fff",
+  borderRadius: 8,
+  overflow: "hidden",
+};
+
+const modalHeader: React.CSSProperties = {
+  background: "#006AFF",
+  color: "white",
+  padding: 15,
+  fontSize: 18,
+  fontWeight: "bold",
+};
+
+const modalBody: React.CSSProperties = {
+  padding: 20,
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+};
+
+const modalFooter: React.CSSProperties = {
+  padding: 20,
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: 10,
+};
+
+const inputBox: React.CSSProperties = {
+  width: "100%",
+  padding: "10px",
+  borderRadius: 4,
+  border: "1px solid #ccc",
+  fontSize: 14,
+};
+
+const cancelBtn: React.CSSProperties = {
+  padding: "8px 15px",
+  background: "#d1d1d1",
+  borderRadius: 4,
+  border: "none",
+  cursor: "pointer",
+};
+
+const saveBtn: React.CSSProperties = {
+  padding: "8px 15px",
+  background: "#006AFF",
+  color: "#fff",
+  borderRadius: 4,
+  border: "none",
+  cursor: "pointer",
+};
+
 
   // ---------- MAIN RENDER ----------
 
@@ -439,7 +536,14 @@ export default function LeadDetailsPage({
       </div>
 
       {/* Activities */}
-      <div style={sectionTitle}>Lead Activities</div>
+      <div style={{ ...sectionTitle, display: "flex", alignItems: "center" }}>
+  Lead Activities
+  <button style={addBtn} onClick={() => setShowAddActivity(true)}>
+
+    +
+  </button>
+</div>
+
       <div style={tableWrap}>
         <table
           style={{
@@ -478,7 +582,13 @@ export default function LeadDetailsPage({
       </div>
 
       {/* Reminders */}
-      <div style={sectionTitle}>Lead Reminders</div>
+      <div style={{ ...sectionTitle, display: "flex", alignItems: "center" }}>
+  Lead Reminders
+  <button style={addBtn} onClick={() => setShowAddReminder(true)}>
+
+    +
+  </button>
+</div>
       <div style={tableWrap}>
         <table
           style={{
@@ -515,6 +625,54 @@ export default function LeadDetailsPage({
           </tbody>
         </table>
       </div>
+      {/* Lead Opportunities */}
+<div style={{ ...sectionTitle, display: "flex", alignItems: "center" }}>
+  Lead Opportunities
+  <button style={addBtn} onClick={() => setShowAddOpportunity(true)}>
+    +
+  </button>
+</div>
+
+<div style={tableWrap}>
+  <table
+    style={{
+      width: "100%",
+      borderCollapse: "separate",
+      borderSpacing: 0,
+    }}
+  >
+    <thead>
+      <tr>
+        <th style={{ ...thStyle, width: 180 }}>Created Date</th>
+        <th style={{ ...thStyle, width: 150 }}>Service</th>
+        <th style={{ ...thStyle, width: 120 }}>Probability</th>
+        <th style={{ ...thStyle, width: 200 }}>Status</th>
+        <th style={{ ...thStyle, width: 200 }}>Engagement Model</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {(lead.Opportunities || []).map((o, i) => (
+        <tr key={i}>
+          <td style={tdStyle}>{o.CreatedDate}</td>
+          <td style={tdStyle}>{o.Service}</td>
+          <td style={tdStyle}>{o.Probability}</td>
+          <td style={tdStyle}>{o.Status}</td>
+          <td style={tdStyle}>{o.EngagementModel}</td>
+        </tr>
+      ))}
+
+      {(!lead.Opportunities || lead.Opportunities.length === 0) && (
+        <tr>
+          <td colSpan={5} style={tdStyle}>
+            No opportunities
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
 
       <div
         title="Add"
@@ -523,6 +681,215 @@ export default function LeadDetailsPage({
       >
         +
       </div>
+             {/* -------------------- ADD ACTIVITY MODAL -------------------- */}
+{showAddActivity && (
+  <div style={modalOverlay}>
+    <div style={modalBox}>
+      <div style={modalHeader}>Add Lead Activity</div>
+
+      <div style={modalBody}>
+        <label>Activity Type *</label>
+        <select style={inputBox}>
+          <option>Select Type</option>
+          <option>Call</option>
+          <option>Visit</option>
+          <option>Email</option>
+        </select>
+
+        <label>Status *</label>
+        <select style={inputBox}>
+          <option>Select Status</option>
+          <option>New</option>
+          <option>Contacted</option>
+          <option>Completed</option>
+        </select>
+
+        <label>Notes *</label>
+        <textarea style={{ ...inputBox, height: 80 }} />
+      </div>
+
+      <div style={modalFooter}>
+        <button style={cancelBtn} onClick={() => setShowAddActivity(false)}>Cancel</button>
+        <button style={saveBtn}>Save Activity</button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* -------------------- ADD REMINDER MODAL -------------------- */}
+{showAddReminder && (
+  <div style={modalOverlay}>
+    <div style={modalBox}>
+      <div style={modalHeader}>Add Lead Reminder</div>
+
+      <div style={modalBody}>
+        <label>Reminder Date *</label>
+        <input type="date" style={inputBox} />
+
+        <label>Reminder Notes *</label>
+        <textarea style={{ ...inputBox, height: 80 }} />
+
+        <label>Status</label>
+        <select style={inputBox}>
+          <option>-- Select Status --</option>
+          <option>Pending</option>
+          <option>Completed</option>
+        </select>
+
+        <label>Notification Channels</label>
+        <select style={inputBox}>
+          <option>-- Select NotificationChannel --</option>
+          <option>Email</option>
+          <option>SMS</option>
+          <option>Email,SMS</option>
+        </select>
+      </div>
+
+      <div style={modalFooter}>
+        <button style={cancelBtn} onClick={() => setShowAddReminder(false)}>Cancel</button>
+        <button style={saveBtn}>Save Reminder</button>
+      </div>
+    </div>
+  </div>
+)}
+{/* -------------------- ADD OPPORTUNITY MODAL -------------------- */}
+{showAddOpportunity && (
+  <div style={modalOverlay}>
+    <div style={{ ...modalBox, width: "85%", maxWidth: 1100 }}>
+      <div style={{ 
+        ...modalHeader, 
+        display: "flex", 
+        justifyContent: "space-between",
+        alignItems: "center"
+      }}>
+        <span>Add Lead Opportunity</span>
+        <span 
+          style={{ cursor: "pointer", fontSize: 22 }} 
+          onClick={() => setShowAddOpportunity(false)}
+        >
+          ✕
+        </span>
+      </div>
+
+      <div style={modalBody}>
+
+        {/* SERVICE + STATUS */}
+        <div style={{ display: "flex", gap: 20 }}>
+          <div style={{ flex: 1 }}>
+            <label>Service *</label>
+            <select style={inputBox}>
+              <option>-- Select Service --</option>
+              <option>AI</option>
+              <option>Cloud</option>
+              <option>Data Engineering</option>
+              <option>DevOps</option>
+              <option>Staff Augmentation</option>
+            </select>
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <label>Status *</label>
+            <select style={inputBox}>
+              <option>-- Select Status --</option>
+              <option>Engagement Model Identified</option>
+              <option>Proposal Sent</option>
+              <option>Negotiation</option>
+              <option>Closed Won</option>
+              <option>Closed Lost</option>
+            </select>
+          </div>
+        </div>
+
+        {/* PROBABILITY + ENGAGEMENT MODEL */}
+        <div style={{ display: "flex", gap: 20 }}>
+          {/* Probability */}
+          <div style={{ flex: 1 }}>
+            <label>Probability *</label>
+            <div style={{
+              border: "1px solid #ccc",
+              borderRadius: 6,
+              padding: 12,
+              marginTop: 6
+            }}>
+              <div><input type="radio" name="prob" /> &nbsp; &lt;25%</div>
+              <div style={{ marginTop: 6 }}><input type="radio" name="prob" /> &nbsp; 50%</div>
+              <div style={{ marginTop: 6 }}><input type="radio" name="prob" /> &nbsp; 75%</div>
+              <div style={{ marginTop: 6 }}><input type="radio" name="prob" /> &nbsp; 90%</div>
+            </div>
+          </div>
+
+          {/* Engagement Model */}
+          <div style={{ flex: 1 }}>
+            <label>Engagement Model *</label>
+            <select style={inputBox}>
+              <option>-- Select Engagement Model --</option>
+              <option>Competence Center (ODC)</option>
+              <option>Time & Material</option>
+              <option>Fixed Bid</option>
+              <option>Retainer</option>
+            </select>
+          </div>
+        </div>
+
+        {/* TECHNOLOGY */}
+        <label style={{ marginTop: 10 }}>Technology *</label>
+
+        <div style={{
+          border: "1px solid #ccc",
+          padding: 20,
+          borderRadius: 6
+        }}>
+
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+
+            {/* DEVELOPMENT STACK */}
+            <div>
+              <b>Development Stack</b>
+              <div><input type="checkbox" /> &nbsp; LAMP</div>
+              <div><input type="checkbox" /> &nbsp; MEAN</div>
+              <div><input type="checkbox" /> &nbsp; MERN</div>
+              <div><input type="checkbox" /> &nbsp; Java Spring</div>
+              <div><input type="checkbox" /> &nbsp; .NET Stack</div>
+              <div><input type="checkbox" /> &nbsp; Other</div>
+            </div>
+
+            {/* CLOUD PLATFORMS */}
+            <div>
+              <b>Cloud Computing Platforms</b>
+              <div><input type="checkbox" /> &nbsp; AWS</div>
+              <div><input type="checkbox" /> &nbsp; Azure</div>
+              <div><input type="checkbox" /> &nbsp; Google Cloud Platform</div>
+              <div><input type="checkbox" /> &nbsp; IBM Cloud</div>
+              <div><input type="checkbox" /> &nbsp; Oracle Cloud Infrastructure</div>
+            </div>
+
+            {/* DATABASE TECHNOLOGIES */}
+            <div>
+              <b>Database Technologies</b>
+              <div><input type="checkbox" /> &nbsp; Oracle Database</div>
+              <div><input type="checkbox" /> &nbsp; SQL Server</div>
+              <div><input type="checkbox" /> &nbsp; MySQL</div>
+              <div><input type="checkbox" /> &nbsp; PostgreSQL</div>
+              <div><input type="checkbox" /> &nbsp; MongoDB</div>
+              <div><input type="checkbox" /> &nbsp; Cassandra</div>
+              <div><input type="checkbox" /> &nbsp; Snowflake</div>
+              <div><input type="checkbox" /> &nbsp; Amazon Redshift</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* FOOTER */}
+      <div style={modalFooter}>
+        <button style={cancelBtn} onClick={() => setShowAddOpportunity(false)}>Cancel</button>
+        <button style={saveBtn}>Save Opportunity</button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
