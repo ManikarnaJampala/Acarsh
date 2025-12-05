@@ -102,8 +102,8 @@ export default function LeadDetailsPage({
         const array = Array.isArray(all)
           ? all
           : all?.data && Array.isArray(all.data)
-          ? all.data
-          : [];
+            ? all.data
+            : [];
 
         const found = array.find(
           (x: any) => String(x.LeadId) === String(effectiveLeadId)

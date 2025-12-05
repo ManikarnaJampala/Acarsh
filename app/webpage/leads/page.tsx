@@ -70,7 +70,7 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
         padding: 20,
         fontFamily: "Segoe UI, system-ui, sans-serif",
         width: "100%",
-        overflowY:"auto",
+        overflowY: "auto",
         boxSizing: "border-box",
       }}
     >
@@ -424,7 +424,7 @@ const labelStyle: React.CSSProperties = {
 
 const sectionBody: React.CSSProperties = {
   padding: 20,
-  overflowY:"auto",
+  overflowY: "auto",
 };
 
 const inputStyle: React.CSSProperties = {
