@@ -2,11 +2,14 @@
 
 import React, { useState } from "react";
 
+type EntityType = "lead" | "prospect" | "account";
+
 type AddLeadPageProps = {
   onBack: () => void;
+  type?: EntityType; 
 };
 
-export default function AddLeadPage({ onBack }: AddLeadPageProps) {
+export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps) {
   const [form, setForm] = useState({
     CompanyName: "",
     CompanyLocation: "",
@@ -16,7 +19,7 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
     AccountType: "",
     OwnerName: "",
 
-    // Lead Details
+    // Lead / Prospect / Account Details
     ExpansionAreas: "",
     Tags: "",
     Notes: "",
@@ -34,6 +37,12 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
     AddReminder: false,
   });
 
+  // 🔹 Texts based on type
+  const entityLabel: string =
+    type === "prospect" ? "Prospect" : type === "account" ? "Account" : "Lead";
+
+  const entityLabelLower = entityLabel.toLowerCase();
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -50,6 +59,7 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // NOTE: API is still /api/leads – you can later change for prospects/accounts if needed
     const res = await fetch("/api/leads", {
       method: "POST",
       body: JSON.stringify(form),
@@ -57,11 +67,11 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
     });
 
     if (!res.ok) {
-      alert("Failed to save lead");
+      alert(`Failed to save ${entityLabelLower}`);
       return;
     }
 
-    alert("Lead added successfully!");
+    alert(`${entityLabel} added successfully!`);
   };
 
   return (
@@ -84,10 +94,11 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
         }}
       >
         <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>
-          Add New Lead
+          {/* 🔹 Dynamic heading */}
+          Add New {entityLabel}
         </h2>
 
-        {/* UPDATED BACK BUTTON */}
+        {/* BACK BUTTON */}
         <button
           onClick={onBack}
           style={{
@@ -214,9 +225,10 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
           </div>
         </section>
 
-        {/* ---------------------------- LEAD DETAILS ---------------------------- */}
+        {/* ---------------------------- LEAD / PROSPECT / ACCOUNT DETAILS ---------------------------- */}
         <section style={boxWrapper}>
-          <div style={boxHeader}>Lead Details</div>
+          {/* 🔹 Dynamic section title */}
+          <div style={boxHeader}>{entityLabel} Details</div>
 
           <div style={sectionBody}>
             <div style={grid3}>
@@ -256,7 +268,7 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
                 <label style={labelStyle}>Notes</label>
                 <textarea
                   name="Notes"
-                  placeholder="Additional notes about this lead..."
+                  placeholder={`Additional notes about this ${entityLabelLower}...`}
                   style={textareaStyle}
                   value={form.Notes}
                   onChange={handleChange}
@@ -405,8 +417,9 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
             Cancel
           </button>
 
+          {/* 🔹 Dynamic submit text */}
           <button type="submit" style={btnPrimary}>
-            Create Lead
+            Create {entityLabel}
           </button>
         </div>
       </form>

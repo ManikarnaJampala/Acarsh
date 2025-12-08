@@ -12,7 +12,8 @@ import AddLeadPage from "./leads/addleed/page";
 import LeadDetailsPage from "./leads/Leaddetails/page";
 
 // Tabs
-type TabKey = "home" | "dashboard" | "leads" | "addLead" | "Prospect" | "leadDetails" | "Account" | "Remainder";
+type TabKey = "home" | "dashboard" | "leads" | "addLead" |
+"addProspect"|"addAccount"| "Prospect" | "leadDetails" | "Account" | "Remainder";
 
 export default function HelloPage(): JSX.Element {
   const dispatch = useDispatch();
@@ -179,7 +180,9 @@ export default function HelloPage(): JSX.Element {
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
-            onAddLead={() => setActiveTab("addLead")}
+            onAddLead={() => setActiveTab("addProspect")}
+            onOpenLeadDetails={(leadId) => {
+              setSelectedLeadId(leadId);}}
           />
         );
 
@@ -190,12 +193,35 @@ export default function HelloPage(): JSX.Element {
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
-            onAddLead={() => setActiveTab("addLead")}
+            onAddLead={() => setActiveTab("addAccount")}
           />
         );
 
       case "addLead":
-        return <AddLeadPage onBack={() => setActiveTab("leads")} />;
+    return (
+      <AddLeadPage
+        type="lead"
+        onBack={() => setActiveTab("leads")} 
+      />
+    );
+
+  // 🔹 Add Prospect page
+  case "addProspect":
+    return (
+      <AddLeadPage
+        type="prospect"
+        onBack={() => setActiveTab("Prospect")} 
+      />
+    );
+
+  // 🔹 Add Account page
+  case "addAccount":
+    return (
+      <AddLeadPage
+        type="account"
+        onBack={() => setActiveTab("Account")}
+      />
+    );
 
       case "leadDetails":
         return (
