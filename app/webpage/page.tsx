@@ -12,7 +12,15 @@ import AddLeadPage from "./leads/addleed/page";
 import LeadDetailsPage from "./leads/Leaddetails/page";
 
 // Tabs
-type TabKey = "home" | "dashboard" | "leads" | "addLead" | "Prospect" | "leadDetails" | "Account" | "Remainder";
+type TabKey =
+  | "home"
+  | "dashboard"
+  | "leads"
+  | "addLead"
+  | "Prospect"
+  | "leadDetails"
+  | "Account"
+  | "Remainder";
 
 export default function HelloPage(): JSX.Element {
   const dispatch = useDispatch();
@@ -32,21 +40,26 @@ export default function HelloPage(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [employeesLocal, setEmployeesLocal] = useState<Employee[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLeadId, setSelectedLeadId] = useState<number | string | null>(null);
-
+  const [selectedLeadId, setSelectedLeadId] = useState<number | string | null>(
+    null
+  );
 
   // sidebar collapsed => icon-only mode
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const tabIcons: Record<TabKey, React.ReactNode> = {
     home: "",
-    dashboard: <Image src="/dashboard1.png" alt="Dashboard" width={20} height={20} />,
+    dashboard: (
+      <Image src="/dashboard1.png" alt="Dashboard" width={20} height={20} />
+    ),
     leads: <Image src="/group.png" alt="Leads" width={20} height={20} />,
-    Prospect: <Image src="/prospect.png" alt="Prospect" width={20} height={20} />,
+    Prospect: (
+      <Image src="/prospect.png" alt="Prospect" width={20} height={20} />
+    ),
     Account: <Image src="/account.png" alt="Account" width={20} height={20} />,
     Remainder: <Image src="/bell.png" alt="Remainder" width={20} height={20} />,
     addLead: "",
-    leadDetails:""
+    leadDetails: "",
   };
 
   // ---- API CALLS ----
@@ -90,7 +103,6 @@ export default function HelloPage(): JSX.Element {
       setLoading(false);
     }
   };
-
 
   const fetchAccountList = async () => {
     try {
@@ -159,7 +171,7 @@ export default function HelloPage(): JSX.Element {
       case "leads":
         return (
           <EmployeeList
-            type = "lead"
+            type="lead"
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
@@ -172,10 +184,9 @@ export default function HelloPage(): JSX.Element {
         );
 
       case "Prospect":
-
         return (
           <EmployeeList
-            type = "prospect"
+            type="prospect"
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
@@ -186,7 +197,7 @@ export default function HelloPage(): JSX.Element {
       case "Account":
         return (
           <EmployeeList
-            type = "account"
+            type="account"
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
@@ -202,6 +213,7 @@ export default function HelloPage(): JSX.Element {
           <LeadDetailsPage
             leadId={selectedLeadId}
             onBack={() => setActiveTab("leads")}
+            onEdit={() => setActiveTab("addLead")}
           />
         );
 
@@ -220,6 +232,7 @@ export default function HelloPage(): JSX.Element {
         fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto",
         position: "relative",
         background: "#f3f4f6",
+        overflow: "hidden",
       }}
     >
       {/* LEFT SIDEBAR */}
@@ -238,6 +251,9 @@ export default function HelloPage(): JSX.Element {
           overflowX: "hidden",
           transition: "width 0.25s ease, padding 0.25s ease",
           boxSizing: "border-box",
+          position: "fixed",
+          top: 0,
+          zIndex: 1,
         }}
       >
         {/* LOGO — visible ONLY when NOT collapsed */}
@@ -302,63 +318,71 @@ export default function HelloPage(): JSX.Element {
               marginTop: sidebarCollapsed ? 70 : 20,
             }}
           >
-            {(["dashboard", "leads", "Prospect", "Account", "Remainder"] as TabKey[]).map(
-              (tab) => {
-                const label = tab[0].toUpperCase() + tab.slice(1);
-                const active = activeTab === tab;
-                const icon = tabIcons[tab];
+            {(
+              [
+                "dashboard",
+                "leads",
+                "Prospect",
+                "Account",
+                "Remainder",
+              ] as TabKey[]
+            ).map((tab) => {
+              const label = tab[0].toUpperCase() + tab.slice(1);
+              const active = activeTab === tab;
+              const icon = tabIcons[tab];
 
-                return (
-                  <li key={tab} style={{ paddingRight: 8 }}>
-                    <button
-                      onClick={() => handleTab(tab)}
+              return (
+                <li key={tab} style={{ paddingRight: 8 }}>
+                  <button
+                    onClick={() => handleTab(tab)}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: sidebarCollapsed ? 0 : 12,
+                      textAlign: "left",
+                      padding: sidebarCollapsed ? "10px 6px" : "10px 14px",
+                      borderRadius: 8,
+                      border: "none",
+                      cursor: "pointer",
+                      background: active ? "#1e53d7" : "#f7f7f7",
+                      color: active ? "#fff" : "#111",
+                      minHeight: 44,
+                      justifyContent: sidebarCollapsed
+                        ? "center"
+                        : "flex-start",
+                      transition: "background 0.15s ease, color 0.15s ease",
+                    }}
+                  >
+                    <span
                       style={{
-                        width: "100%",
-                        display: "flex",
+                        display: "inline-flex",
+                        width: 22,
+                        height: 22,
                         alignItems: "center",
-                        gap: sidebarCollapsed ? 0 : 12,
-                        textAlign: "left",
-                        padding: sidebarCollapsed ? "10px 6px" : "10px 14px",
-                        borderRadius: 8,
-                        border: "none",
-                        cursor: "pointer",
-                        background: active ? "#1e53d7" : "#f7f7f7",
-                        color: active ? "#fff" : "#111",
-                        minHeight: 44,
-                        justifyContent: sidebarCollapsed ? "center" : "flex-start",
-                        transition: "background 0.15s ease, color 0.15s ease",
+                        justifyContent: "center",
+                        flexShrink: 0,
                       }}
                     >
+                      {icon}
+                    </span>
+
+                    {!sidebarCollapsed && (
                       <span
                         style={{
-                          display: "inline-flex",
-                          width: 22,
-                          height: 22,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
+                          flex: 1,
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: active ? "#fff" : "#222",
                         }}
                       >
-                        {icon}
+                        {label}
                       </span>
-
-                      {!sidebarCollapsed && (
-                        <span
-                          style={{
-                            flex: 1,
-                            fontSize: 14,
-                            fontWeight: 500,
-                            color: active ? "#fff" : "#222",
-                          }}
-                        >
-                          {label}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                );
-              }
-            )}
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -371,6 +395,9 @@ export default function HelloPage(): JSX.Element {
       <main
         style={{
           flex: 1,
+          marginLeft: sidebarCollapsed ? 64 : 260,
+          height: "100vh",
+          overflowY: "auto",
           padding: 0,
           background: "#fff",
           transition: "all 0.3s ease",
@@ -379,7 +406,6 @@ export default function HelloPage(): JSX.Element {
         {/* BLUE TOP BAR */}
         <div
           style={{
-            width: "100%",
             height: 60,
             backgroundColor: "#3a77e3",
             display: "flex",
@@ -387,8 +413,12 @@ export default function HelloPage(): JSX.Element {
             justifyContent: "space-between",
             color: "white",
             boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            position: "relative",
             boxSizing: "border-box",
+            position: "fixed",
+            top: 0,
+            left: sidebarCollapsed ? 64 : 260,
+            width: `calc(100% - ${sidebarCollapsed ? 64 : 260}px)`,
+            zIndex: 2,
           }}
         >
           {/* Sidebar toggle */}
@@ -408,7 +438,6 @@ export default function HelloPage(): JSX.Element {
               justifyContent: "center",
               cursor: "pointer",
               boxShadow: "0 0 4px rgba(0,0,0,0.25)",
-              zIndex: 1000,
             }}
           >
             <span

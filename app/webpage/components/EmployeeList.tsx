@@ -106,7 +106,7 @@ export default function EmployeeList({
   return (
     <div
       style={{
-        marginTop: 16,
+        marginTop: 60,
         background: "#ffffff",
         borderRadius: 4,
         boxShadow: "0 0 4px rgba(0,0,0,0.08)",
@@ -128,7 +128,7 @@ export default function EmployeeList({
         <button
           onClick={onAddLead}
           style={{
-            background: "#2563eb",
+            background: "#3a77e3",
             color: "white",
             padding: "7px 12px",
             border: "none",
@@ -388,7 +388,7 @@ export default function EmployeeList({
                           fontSize: 9.52,
                           fontWeight: 600,
                           backgroundColor: "#e4f2ff",
-                          color: "#1f6fdc",
+                          color: "#3a77e3",
                           textTransform: "uppercase",
                         }}
                       >

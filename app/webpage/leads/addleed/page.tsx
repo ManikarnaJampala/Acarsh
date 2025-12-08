@@ -81,6 +81,7 @@ export default function AddLeadPage({ onBack }: AddLeadPageProps) {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 16,
+          marginTop:70
         }}
       >
         <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>
@@ -465,7 +466,7 @@ const boxWrapper: React.CSSProperties = {
 };
 
 const boxHeader: React.CSSProperties = {
-  background: "#1e40af",
+  background: "#3a77e3",
   color: "#fff",
   padding: "10px 16px",
   fontWeight: 600,
@@ -475,7 +476,7 @@ const boxHeader: React.CSSProperties = {
 };
 
 const btnPrimary: React.CSSProperties = {
-  background: "#2563eb",
+  background: "#3a77e3",
   color: "white",
   padding: "10px 18px",
   fontSize: 14,

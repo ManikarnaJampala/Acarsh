@@ -15,6 +15,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/webpage/page.js"
+    ],
+    "/webpage/leads/addleed/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/webpage/leads/addleed/page.js"
     ]
   }
 }
