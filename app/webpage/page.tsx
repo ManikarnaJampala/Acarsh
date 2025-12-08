@@ -8,7 +8,7 @@ import { setEmployees } from "../../store/employeesSlice";
 import EmployeeList, { Employee } from "./components/EmployeeList";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import AddLeadPage from "./leads/page";
+import AddLeadPage from "./leads/addleed/page";
 import LeadDetailsPage from "./leads/Leaddetails/page";
 
 // Tabs
@@ -159,6 +159,7 @@ export default function HelloPage(): JSX.Element {
       case "leads":
         return (
           <EmployeeList
+            type = "lead"
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
@@ -174,6 +175,7 @@ export default function HelloPage(): JSX.Element {
 
         return (
           <EmployeeList
+            type = "prospect"
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
@@ -184,6 +186,7 @@ export default function HelloPage(): JSX.Element {
       case "Account":
         return (
           <EmployeeList
+            type = "account"
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}

@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+
 export type Contact = {
   ContactName: string | null;
   ContactRoleName: string | null;
@@ -25,6 +26,8 @@ export type Employee = {
   Contacts: Contact[];
 };
 
+type EntityType = "lead" | "prospect" | "account";
+
 type Props = {
   employees: Employee[] | null | undefined;
   loading?: boolean;
@@ -32,6 +35,7 @@ type Props = {
   onDelete?: (leadId: number | string) => void;
   onAddLead: () => void;
   onOpenLeadDetails?: (leadId: number | string) => void;
+  type: EntityType; 
 };
 
 export default function EmployeeList({
@@ -41,9 +45,23 @@ export default function EmployeeList({
   onDelete,
   onAddLead,
   onOpenLeadDetails,
+  type,
 }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+
+  // Label for the Add button based on `type`
+  const addButtonLabel = useMemo(() => {
+    switch (type) {
+      case "prospect":
+        return "Add Prospect";
+      case "account":
+        return "Add Account";
+      case "lead":
+      default:
+        return "Add Lead";
+    }
+  }, [type]);
 
   // Normalize employees prop to a plain array (support wrapper shapes like { data: [...] })
   const employeesList: Employee[] = Array.isArray(employees)
@@ -96,7 +114,7 @@ export default function EmployeeList({
       }}
     >
       {/* --------------------------------------------- */}
-      {/* ---------- Top bar: Add Lead + Search ---------- */}
+      {/* ---------- Top bar: Add + Search ---------- */}
       <div
         style={{
           display: "flex",
@@ -106,7 +124,7 @@ export default function EmployeeList({
           padding: "16px",
         }}
       >
-        {/* Add Lead Button */}
+        {/* Add Button (text depends on `type`) */}
         <button
           onClick={onAddLead}
           style={{
@@ -120,7 +138,7 @@ export default function EmployeeList({
             fontWeight: "bold",
           }}
         >
-          Add Lead
+          {addButtonLabel}
         </button>
 
         {/* Search Bar */}
@@ -267,7 +285,6 @@ export default function EmployeeList({
                               </span>
                             )}
                           </div>
-
 
                           {/* Title */}
                           {c.ContactTitle && (
@@ -454,9 +471,6 @@ function formatDate(value: string | number | Date) {
 const thStyle: React.CSSProperties = {
   textAlign: "left",
   padding: "8px 12px",
-  //   borderBottom: "1px solid #3b414d",
-  //   borderRight: "0.0px solid #e4e9f0",
-  //   borderLeft: "0.1px solid #e4e9f0",
   border: "1px solid rgba(148, 148, 148, 0.4)",
   fontWeight: 600,
   fontSize: 12,
@@ -470,9 +484,6 @@ const thStyle: React.CSSProperties = {
 
 const tdStyle: React.CSSProperties = {
   padding: "10px 12px",
-  //   borderBottom: "1px solid #e1e4ed",
-  //   borderRight: "0.01px solid #bebbbbff",
-  //   borderLeft: "0.01px solid #bebbbbff",
   border: "1px solid rgba(145, 145, 146, 0.4)",
   verticalAlign: "top",
   fontSize: 13,
