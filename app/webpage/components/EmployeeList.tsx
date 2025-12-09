@@ -35,7 +35,7 @@ type Props = {
   onDelete?: (leadId: number | string) => void;
   onAddLead: () => void;
   onOpenLeadDetails?: (leadId: number | string) => void;
-  type: EntityType; 
+  type: EntityType;
 };
 
 export default function EmployeeList({
@@ -49,6 +49,7 @@ export default function EmployeeList({
 }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Label for the Add button based on `type`
   const addButtonLabel = useMemo(() => {
@@ -69,8 +70,8 @@ export default function EmployeeList({
     : employees &&
       (employees as any).data &&
       Array.isArray((employees as any).data)
-      ? (employees as any).data
-      : [];
+    ? (employees as any).data
+    : [];
 
   const filteredEmployees = useMemo(() => {
     const q = (query || "").toLowerCase();
@@ -162,16 +163,24 @@ export default function EmployeeList({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
             placeholder="Search leads by company, contact, email, source, status, owner..."
             style={{
               width: "350px",
               marginRight: "300px",
               padding: "13px 40px",
               paddingLeft: "45px",
-              borderRadius: 1,
-              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              border: isSearchFocused
+                ? "1.5px solid #4a90e2"
+                : "1px solid #d1d5db",
+              boxShadow: isSearchFocused
+                ? "0 0 8px rgba(8, 40, 218, 0.25)"
+                : "none",
               fontSize: 14,
               outline: "none",
+              transition: "box-shadow 0.15s ease, border 0.15s ease",
             }}
           />
         </div>
@@ -263,7 +272,9 @@ export default function EmployeeList({
                         >
                           {/* Name + Role */}
                           <div
-                            onDoubleClick={() => onOpenLeadDetails?.(emp.LeadId)}
+                            onDoubleClick={() =>
+                              onOpenLeadDetails?.(emp.LeadId)
+                            }
                             title="Double click to open details"
                             style={{
                               fontWeight: "600",

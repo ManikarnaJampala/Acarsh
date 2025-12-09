@@ -253,7 +253,7 @@ export default function LeadDetailsPage({
     padding: "8px 12px",
     borderRadius: 6,
     border: "none",
-    background: "#efefef",
+    background: "#3a77e3",
     cursor: "pointer",
   };
 
@@ -281,7 +281,7 @@ export default function LeadDetailsPage({
     display: "flex",
     gap: 20,
     marginBottom: 16,
-    alignItems: "flex-start",
+    alignItems: "stretch",
   };
 
   const cardStyle: React.CSSProperties = {
@@ -297,12 +297,37 @@ export default function LeadDetailsPage({
     ...cardStyle,
     maxWidth: 380,
   };
+  const contactCardStyle: React.CSSProperties = {
+    background: "#fff",
+    borderRadius: 8,
+    padding: "12px 14px",
+    border: "1px solid #eef1f4",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+    marginBottom: 12,
+    display: "flex",
+    gap: 12,
+    alignItems: "flex-start",
+    borderLeft: "4px solid #1e90ff",
+  };
+
+  const contactAccentStyle: React.CSSProperties = {
+    paddingLeft: 10,
+  };
+
+  const contactRowLabel: React.CSSProperties = {
+    fontWeight: 700,
+    minWidth: 60,
+    fontSize: 13,
+    color: "#111",
+  };
 
   const sectionTitle: React.CSSProperties = {
     fontSize: 16,
     fontWeight: 700,
     marginBottom: 10,
     color: "#333",
+    // borderBottom: "1px solid #e6e6e6",
+    // paddingBottom: 8,
   };
 
   const label: React.CSSProperties = {
@@ -319,8 +344,9 @@ export default function LeadDetailsPage({
   const notesStyle: React.CSSProperties = {
     background: "#fff3cd",
     border: "1px solid #ffeeba",
-    padding: "10px 14px",
-    borderRadius: 6,
+    borderLeft: "6px solid #f1c040",
+    padding: "10px 14px 10px 16px",
+    borderRadius: 8,
     color: "#856404",
     marginBottom: 16,
   };
@@ -383,7 +409,7 @@ export default function LeadDetailsPage({
     fontSize: 14,
     marginLeft: 6,
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "semobold",
     border: "none",
     lineHeight: 0,
   };
@@ -402,7 +428,7 @@ export default function LeadDetailsPage({
   };
 
   const modalBox: React.CSSProperties = {
-    width: 500,
+    width: 450,
     background: "#fff",
     borderRadius: 8,
     overflow: "hidden",
@@ -412,7 +438,7 @@ export default function LeadDetailsPage({
     background: "#3a77e3",
     color: "white",
     padding: 15,
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "bold",
   };
 
@@ -420,11 +446,12 @@ export default function LeadDetailsPage({
     padding: 20,
     display: "flex",
     flexDirection: "column",
-    gap: 12,
+    gap: 8,
+    fontSize:13
   };
 
   const modalFooter: React.CSSProperties = {
-    padding: 20,
+    padding: 10,
     display: "flex",
     justifyContent: "flex-end",
     gap: 10,
@@ -435,7 +462,7 @@ export default function LeadDetailsPage({
     padding: "10px",
     borderRadius: 4,
     border: "1px solid #ccc",
-    fontSize: 14,
+    fontSize: 12,
   };
 
   const cancelBtn: React.CSSProperties = {
@@ -459,11 +486,14 @@ export default function LeadDetailsPage({
 
   return (
     <div style={container}>
+      <button onClick={handleBack} style={backBtn}>
+        Back
+      </button>
       <div style={headerRow}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={handleBack} style={backBtn}>
-            {getBackLabel()}
-          </button>
+          <p style={{ color: "grey", fontWeight: 700, fontSize: 20 }}>
+            Lead Details
+          </p>
         </div>
 
         <div style={topActions}>
@@ -482,31 +512,31 @@ export default function LeadDetailsPage({
 
       <div style={rowStyle}>
         <div style={cardStyle}>
-          <div style={sectionTitle}>Company Information</div>
+          <div style={{...sectionTitle,borderBottom: "1px solid #e6e6e6",paddingBottom: 8}}>Company Information</div>
           <div style={{ marginBottom: 8 }}>
-            <span style={label}>Company:</span>
+            <span style={contactRowLabel}>Company: </span>
             <span style={value}>{lead.CompanyName}</span>
           </div>
 
           <div style={{ marginBottom: 8 }}>
-            <span style={label}>Location:</span>
+            <span style={contactRowLabel}>Location: </span>
             <span style={value}>{lead.CompanyLocation}</span>
           </div>
 
           <div style={{ marginBottom: 8 }}>
-            <span style={label}>Owner:</span>
+            <span style={contactRowLabel}>Owner: </span>
             <span style={value}>{lead.OwnerName}</span>
           </div>
 
           <div style={{ marginBottom: 8 }}>
-            <span style={label}>Source:</span>
+            <span style={contactRowLabel}>Source: </span>
             <span style={value}>
               <span style={value}>{lead.LeadSource}</span>
             </span>
           </div>
 
           <div style={{ marginBottom: 8 }}>
-            <span style={label}>Date:</span>
+            <span style={contactRowLabel}>Date: </span>
             <span style={value}>
               {lead.LeadDate
                 ? new Date(String(lead.LeadDate)).toLocaleDateString()
@@ -515,7 +545,7 @@ export default function LeadDetailsPage({
           </div>
 
           <div style={{ marginBottom: 8 }}>
-            <span style={label}>Status:</span>
+            <span style={contactRowLabel}>Status: </span>
             <span
               style={{
                 padding: "2px 8px",
@@ -529,40 +559,44 @@ export default function LeadDetailsPage({
         </div>
 
         <div style={rightCardStyle}>
-          <div style={sectionTitle}>Contacts</div>
+          <div style={{...sectionTitle,borderBottom: "1px solid #e6e6e6",paddingBottom: 8}}>Contacts</div>
 
           {(lead.Contacts || []).map((c, idx) => (
-            <div
-              key={idx}
-              style={{
-                padding: "10px 0",
-                borderBottom:
-                  idx < (lead.Contacts || []).length - 1
-                    ? "1px solid #eee"
-                    : "none",
-              }}
-            >
-              <div style={{ fontWeight: 70 }}>
-                <span>Name: {c.ContactName}</span>
+            <div key={idx} style={contactCardStyle}>
+              <div style={contactAccentStyle}>
+                <div style={{ display: "flex", marginBottom: 8 }}>
+                  <div style={contactRowLabel}>Name:</div>
+                  <div style={{ fontSize: 13 }}>{c.ContactName || "—"}</div>
+                </div>
+
+                {c.ContactTitle && (
+                  <div style={{ display: "flex", marginBottom: 6 }}>
+                    <div style={contactRowLabel}>Title:</div>
+                    <div style={{ fontSize: 13 }}>{c.ContactTitle}</div>
+                  </div>
+                )}
+
+                {c.ContactRoleName && (
+                  <div style={{ display: "flex", marginBottom: 6 }}>
+                    <div style={contactRowLabel}>Role:</div>
+                    <div style={{ fontSize: 13 }}>{c.ContactRoleName}</div>
+                  </div>
+                )}
+
+                {c.ContactEmail && (
+                  <div style={{ display: "flex" }}>
+                    <div style={contactRowLabel}>Email:</div>
+                    <div style={{ fontSize: 13, color: "#3a77e3" }}>
+                      <a
+                        href={`mailto:${c.ContactEmail}`}
+                        style={{ color: "inherit", textDecoration: "none" }}
+                      >
+                        {c.ContactEmail}
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {c.ContactTitle && (
-                <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>
-                  Name: {c.ContactTitle}
-                </div>
-              )}
-
-              {c.ContactRoleName && (
-                <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>
-                  {c.ContactRoleName}
-                </div>
-              )}
-
-              {c.ContactEmail && (
-                <div style={{ marginTop: 6, color: "#3a77e3" }}>
-                  {c.ContactEmail}
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -716,7 +750,7 @@ export default function LeadDetailsPage({
             <div style={modalHeader}>Add Lead Activity</div>
 
             <div style={modalBody}>
-              <label>Activity Type *</label>
+              <label>Activity Type*</label>
               <select style={inputBox}>
                 <option>Select Type</option>
                 <option>Call</option>
@@ -727,7 +761,7 @@ export default function LeadDetailsPage({
                 <option>Follow-up</option>
               </select>
 
-              <label>Status *</label>
+              <label>Status*</label>
               <select style={inputBox}>
                 <option>Select Status</option>
                 <option>New</option>
@@ -739,8 +773,8 @@ export default function LeadDetailsPage({
                 <option>Converted</option>
               </select>
 
-              <label>Notes *</label>
-              <textarea style={{ ...inputBox, height: 80 }} />
+              <label>Notes*</label>
+              <textarea style={{ ...inputBox, height: 40,width:388 }} />
             </div>
 
             <div style={modalFooter}>
@@ -851,7 +885,7 @@ export default function LeadDetailsPage({
               <div style={{ display: "flex", gap: 20 }}>
                 {/* Probability */}
                 <div style={{ flex: 1 }}>
-                  <label>Probability *</label>
+                  <label>Probability*</label>
                   <div
                     style={{
                       border: "1px solid #ccc",
@@ -877,7 +911,7 @@ export default function LeadDetailsPage({
 
                 {/* Engagement Model */}
                 <div style={{ flex: 1 }}>
-                  <label>Engagement Model *</label>
+                  <label>Engagement Model*</label>
                   <select style={inputBox}>
                     <option>-- Select Engagement Model --</option>
                     <option>Competence Center (ODC)</option>
@@ -889,7 +923,7 @@ export default function LeadDetailsPage({
               </div>
 
               {/* TECHNOLOGY */}
-              <label style={{ marginTop: 10 }}>Technology *</label>
+              <label style={{ marginTop: 1 }}>Technology*</label>
 
               <div
                 style={{
