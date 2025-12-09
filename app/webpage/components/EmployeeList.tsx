@@ -113,7 +113,6 @@ export default function EmployeeList({
         overflow: "hidden",
       }}
     >
-      {/* --------------------------------------------- */}
       {/* ---------- Top bar: Add + Search ---------- */}
       <div
         style={{

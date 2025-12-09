@@ -1,32 +1,15 @@
 {
   "pages": {
-    "/page": [
+    "/webpage/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/webpage/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
-    ],
-    "/webpage/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/webpage/page.js"
-    ],
-<<<<<<< HEAD
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
-=======
-    "/webpage/leads/addleed/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/webpage/leads/addleed/page.js"
->>>>>>> 1aeb662d7437aad3a7a24417c891fda05dacbfbf
     ]
   }
 }

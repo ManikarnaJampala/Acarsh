@@ -1,14 +1,6 @@
 {
-<<<<<<< HEAD
-  "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js",
-  "/api/employees/prospects/route": "app/api/employees/prospects/route.js",
   "/webpage/page": "app/webpage/page.js",
+  "/api/employees/prospects/route": "app/api/employees/prospects/route.js",
   "/api/employees/account/route": "app/api/employees/account/route.js",
   "/api/employees/leads/route": "app/api/employees/leads/route.js"
-=======
-  "/webpage/page": "app/webpage/page.js",
-  "/page": "app/page.js",
-  "/webpage/leads/addleed/page": "app/webpage/leads/addleed/page.js"
->>>>>>> 1aeb662d7437aad3a7a24417c891fda05dacbfbf
 }

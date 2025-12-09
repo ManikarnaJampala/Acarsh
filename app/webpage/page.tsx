@@ -1,3 +1,4 @@
+// page.tsx (updated)
 "use client";
 
 import React, { useState } from "react";
@@ -13,7 +14,7 @@ import LeadDetailsPage from "./leads/Leaddetails/page";
 
 // Tabs
 type TabKey = "home" | "dashboard" | "leads" | "addLead" |
-"addProspect"|"addAccount"| "Prospect" | "leadDetails" | "Account" | "Remainder";
+  "addProspect" | "addAccount" | "Prospect" | "leadDetails" | "Account" | "Remainder";
 
 export default function HelloPage(): JSX.Element {
   const dispatch = useDispatch();
@@ -36,23 +37,20 @@ export default function HelloPage(): JSX.Element {
   const [selectedLeadId, setSelectedLeadId] = useState<number | string | null>(
     null
   );
-
-  // sidebar collapsed => icon-only mode
+  const [selectedLeadOrigin, setSelectedLeadOrigin] =
+   useState<"leads" | "Prospect" | "Account" | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
   const tabIcons: Record<TabKey, React.ReactNode> = {
     home: "",
-    dashboard: (
-      <Image src="/dashboard1.png" alt="Dashboard" width={20} height={20} />
-    ),
+    dashboard: (<Image src="/dashboard1.png" alt="Dashboard" width={20} height={20} />),
     leads: <Image src="/group.png" alt="Leads" width={20} height={20} />,
-    Prospect: (
-      <Image src="/prospect.png" alt="Prospect" width={20} height={20} />
-    ),
+    Prospect: (<Image src="/prospect.png" alt="Prospect" width={20} height={20} />),
     Account: <Image src="/account.png" alt="Account" width={20} height={20} />,
     Remainder: <Image src="/bell.png" alt="Remainder" width={20} height={20} />,
     addLead: "",
     leadDetails: "",
+    addProspect: "",
+    addAccount: "",
   };
 
   // ---- API CALLS ----
@@ -171,6 +169,7 @@ export default function HelloPage(): JSX.Element {
             onAddLead={() => setActiveTab("addLead")}
             onOpenLeadDetails={(leadId) => {
               setSelectedLeadId(leadId);
+              setSelectedLeadOrigin("leads");
               setActiveTab("leadDetails");
             }}
           />
@@ -185,7 +184,10 @@ export default function HelloPage(): JSX.Element {
             error={error}
             onAddLead={() => setActiveTab("addProspect")}
             onOpenLeadDetails={(leadId) => {
-              setSelectedLeadId(leadId);}}
+              setSelectedLeadId(leadId);
+              setSelectedLeadOrigin("Prospect");
+              setActiveTab("leadDetails");
+            }}
           />
         );
 
@@ -197,41 +199,53 @@ export default function HelloPage(): JSX.Element {
             loading={loading}
             error={error}
             onAddLead={() => setActiveTab("addAccount")}
+            onOpenLeadDetails={(leadId) => {
+              setSelectedLeadId(leadId);
+              setSelectedLeadOrigin("Account");
+              setActiveTab("leadDetails");
+            }}
           />
         );
 
       case "addLead":
-    return (
-      <AddLeadPage
-        type="lead"
-        onBack={() => setActiveTab("leads")} 
-      />
-    );
+        return (
+          <AddLeadPage
+            type="lead"
+            onBack={() => setActiveTab("leads")}
+          />
+        );
 
-  // 🔹 Add Prospect page
-  case "addProspect":
-    return (
-      <AddLeadPage
-        type="prospect"
-        onBack={() => setActiveTab("Prospect")} 
-      />
-    );
+      
+      case "addProspect":
+        return (
+          <AddLeadPage
+            type="prospect"
+            onBack={() => setActiveTab("Prospect")}
+          />
+        );
 
-  // 🔹 Add Account page
-  case "addAccount":
-    return (
-      <AddLeadPage
-        type="account"
-        onBack={() => setActiveTab("Account")}
-      />
-    );
+      
+      case "addAccount":
+        return (
+          <AddLeadPage
+            type="account"
+            onBack={() => setActiveTab("Account")}
+          />
+        );
 
       case "leadDetails":
         return (
           <LeadDetailsPage
             leadId={selectedLeadId}
-            onBack={() => setActiveTab("leads")}
-            onEdit={() => setActiveTab("addLead")}
+            origin={selectedLeadOrigin ?? "leads"}
+            // when back is clicked in details, return to the origin tab
+            onBack={() => setActiveTab(selectedLeadOrigin ?? "leads")}
+            // on edit — route to the appropriate add/edit page based on origin
+            onEdit={() => {
+              if (selectedLeadOrigin === "Prospect") setActiveTab("addProspect");
+              else if (selectedLeadOrigin === "Account") setActiveTab("addAccount");
+              else setActiveTab("addLead");
+            }}
           />
         );
 
