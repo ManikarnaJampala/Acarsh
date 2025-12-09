@@ -13,20 +13,8 @@ import AddLeadPage from "./leads/addleed/page";
 import LeadDetailsPage from "./leads/Leaddetails/page";
 
 // Tabs
-<<<<<<< HEAD
 type TabKey = "home" | "dashboard" | "leads" | "addLead" |
   "addProspect" | "addAccount" | "Prospect" | "leadDetails" | "Account" | "Remainder";
-=======
-type TabKey =
-  | "home"
-  | "dashboard"
-  | "leads"
-  | "addLead"
-  | "Prospect"
-  | "leadDetails"
-  | "Account"
-  | "Remainder";
->>>>>>> 08d815ea7293569f6a00ddc54e0518f027291aeb
 
 export default function HelloPage(): JSX.Element {
   const dispatch = useDispatch();
@@ -194,16 +182,12 @@ export default function HelloPage(): JSX.Element {
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
-<<<<<<< HEAD
             onAddLead={() => setActiveTab("addProspect")}
             onOpenLeadDetails={(leadId) => {
               setSelectedLeadId(leadId);
               setSelectedLeadOrigin("Prospect");
               setActiveTab("leadDetails");
             }}
-=======
-            onAddLead={() => setActiveTab("addLead")}
->>>>>>> 08d815ea7293569f6a00ddc54e0518f027291aeb
           />
         );
 
@@ -214,21 +198,16 @@ export default function HelloPage(): JSX.Element {
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
-<<<<<<< HEAD
             onAddLead={() => setActiveTab("addAccount")}
             onOpenLeadDetails={(leadId) => {
               setSelectedLeadId(leadId);
               setSelectedLeadOrigin("Account");
               setActiveTab("leadDetails");
             }}
-=======
-            onAddLead={() => setActiveTab("addLead")}
->>>>>>> 08d815ea7293569f6a00ddc54e0518f027291aeb
           />
         );
 
       case "addLead":
-<<<<<<< HEAD
         return (
           <AddLeadPage
             type="lead"
@@ -253,9 +232,6 @@ export default function HelloPage(): JSX.Element {
             onBack={() => setActiveTab("Account")}
           />
         );
-=======
-        return <AddLeadPage onBack={() => setActiveTab("leads")} />;
->>>>>>> 08d815ea7293569f6a00ddc54e0518f027291aeb
 
       case "leadDetails":
         return (

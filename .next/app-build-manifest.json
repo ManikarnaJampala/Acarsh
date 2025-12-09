@@ -1,17 +1,15 @@
 {
   "pages": {
-    "/webpage/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/webpage/page.js"
+      "static/chunks/app/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
-<<<<<<< HEAD
-=======
     ],
     "/webpage/page": [
       "static/chunks/webpack.js",
@@ -22,7 +20,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/_not-found/page.js"
->>>>>>> 08d815ea7293569f6a00ddc54e0518f027291aeb
     ]
   }
 }
