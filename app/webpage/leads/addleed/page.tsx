@@ -82,6 +82,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
         width: "100%",
         overflowY: "auto",
         boxSizing: "border-box",
+
       }}
     >
       {/* PAGE HEADING */}

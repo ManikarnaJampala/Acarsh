@@ -201,10 +201,10 @@ export default function EmployeeList({
             <tr>
               <th style={thStyle}>Company</th>
               <th style={thStyle}>Contacts</th>
-              <th style={thStyle}>Source</th>
+              <th style={{ ...thStyle, width: 220 }}>Source</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Info</th>
-              <th style={thStyle}>Owner</th>
+              <th style={{ ...thStyle, width: 90 }}>Owner</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
@@ -298,14 +298,19 @@ export default function EmployeeList({
                           </div>
 
                           {/* Title */}
-                          {c.ContactTitle && (
+                          {c.ContactTitle && c.ContactTitle.trim() !== "" && (
                             <div
                               style={{
                                 fontSize: "9.52px",
-                                fontWeight: "normal",
-                                color: "#000",
-                                marginTop: 0,
+                                maxWidth:"150px",
+                                /* truncation: single-line ellipsis, no column width change */
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "block",
+                                
                               }}
+                               title={c.ContactTitle}
                             >
                               {c.ContactTitle}
                             </div>
@@ -398,8 +403,8 @@ export default function EmployeeList({
                           borderRadius: 12,
                           fontSize: 9.52,
                           fontWeight: 600,
-                          backgroundColor: "#e4f2ff",
-                          color: "#3a77e3",
+                          // backgroundColor: "#e4f2ff",
+                          color: "#212529",
                           textTransform: "uppercase",
                         }}
                       >
@@ -413,18 +418,27 @@ export default function EmployeeList({
                   {/* Info Column */}
                   <td style={{ ...tdStyle, verticalAlign: "middle" }}>
                     {/* Date */}
-                    <div style={{ fontSize: 9.52, marginBottom: 2 }}>
+                    <div style={{ fontSize: 9.52, marginBottom: 4 }}>
                       <span style={{ fontWeight: "bold" }}>Date: </span>
                       {formatDate(emp.LeadDate)}
                     </div>
 
-                    {/* Notes */}
-                    <div style={{ fontSize: 9.52 }}>
-                      <span style={{ fontWeight: "bold" }}>Notes: </span>
-                      {emp.LeadNotes && emp.LeadNotes.trim() !== ""
-                        ? emp.LeadNotes
-                        : "—"}
-                    </div>
+                    {/* Notes with partial text + ellipsis + hover full text */}
+                    {emp.LeadNotes && emp.LeadNotes.trim() !== "" && (
+                      <div
+                        style={{
+                          fontSize: 9.52,
+                          maxWidth: "180px", // <--- adjust width to your Info column
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis", // <--- shows partial text + dots (...)
+                        }}
+                        title={emp.LeadNotes} // <--- full text on hover
+                      >
+                        <span style={{ fontWeight: "bold" }}>Notes: </span>
+                        {emp.LeadNotes}
+                      </div>
+                    )}
                   </td>
 
                   {/* Owner */}
@@ -438,6 +452,7 @@ export default function EmployeeList({
                       ...tdStyle,
                       textAlign: "center",
                       verticalAlign: "middle",
+                      width: 30,
                     }}
                   >
                     <button
@@ -484,8 +499,8 @@ const thStyle: React.CSSProperties = {
   padding: "8px 12px",
   border: "1px solid rgba(148, 148, 148, 0.4)",
   fontWeight: 600,
-  fontSize: 12,
-  textTransform: "uppercase",
+  fontSize: 14,
+  // textTransform: "uppercase",
   backgroundColor: "#252b36",
   color: "#ffffff",
   position: "sticky",

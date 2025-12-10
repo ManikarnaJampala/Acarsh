@@ -308,6 +308,7 @@ export default function LeadDetailsPage({
     color: "#444",
     width: 120,
     display: "inline-block",
+    fontSize: 13,
   };
 
   const value: React.CSSProperties = {
@@ -770,11 +771,11 @@ export default function LeadDetailsPage({
             <div style={modalHeader}>Add Lead Reminder</div>
 
             <div style={modalBody}>
-              <label>Reminder Date *</label>
-              <input type="date" style={inputBox} />
+              <label>Reminder Date*</label>
+              <input type="date" style={{...inputBox,width:388}} />
 
-              <label>Reminder Notes *</label>
-              <textarea style={{ ...inputBox, height: 80 }} />
+              <label>Reminder Notes*</label>
+              <textarea style={{ ...inputBox, height: 80 ,width: 388}} />
 
               <label>Status</label>
               <select style={inputBox}>
@@ -785,7 +786,7 @@ export default function LeadDetailsPage({
 
               <label>Notification Channels</label>
               <select style={inputBox}>
-                <option>-- Select NotificationChannel --</option>
+                <option>- - Select NotificationChannel - -</option>
                 <option>Email</option>
                 <option>SMS</option>
                 <option>Email+SMS</option>
@@ -832,7 +833,7 @@ export default function LeadDetailsPage({
                 <div style={{ flex: 1 }}>
                   <label>Service *</label>
                   <select style={inputBox}>
-                    <option>-- Select Service --</option>
+                    <option>- - Select Service - -</option>
                     <option>AI</option>
                     <option>Cloud</option>
                     <option>Data Engineering</option>
@@ -844,7 +845,7 @@ export default function LeadDetailsPage({
                 <div style={{ flex: 1 }}>
                   <label>Status *</label>
                   <select style={inputBox}>
-                    <option>-- Select Status --</option>
+                    <option>- - Select Status - -</option>
                     <option>Engagement Model Identified</option>
                     <option>Proposal Sent</option>
                     <option>Negotiation</option>
@@ -886,7 +887,7 @@ export default function LeadDetailsPage({
                 <div style={{ flex: 1 }}>
                   <label>Engagement Model*</label>
                   <select style={inputBox}>
-                    <option>-- Select Engagement Model --</option>
+                    <option>- - Select Engagement Model - -</option>
                     <option>Competence Center (ODC)</option>
                     <option>Time & Material</option>
                     <option>Fixed Bid</option>
@@ -896,7 +897,7 @@ export default function LeadDetailsPage({
               </div>
 
               {/* TECHNOLOGY */}
-              <label style={{ marginTop: 1 }}>Technology*</label>
+              <label style={{ marginTop: 10 }}>Technology*</label>
 
               <div
                 style={{
