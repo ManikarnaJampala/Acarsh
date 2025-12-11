@@ -1,5 +1,3 @@
-// app/webpage/leads/Leaddetails/page.tsx
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -25,6 +23,7 @@ type Reminder = {
   Status?: string;
   Notification?: string;
 };
+
 type Opportunity = {
   CreatedDate: string;
   Service: string;
@@ -48,16 +47,21 @@ type Lead = {
   Opportunities?: Opportunity[];
 };
 
+// NEW: origin type & prop
+type OriginType = "leads" | "Prospect" | "Account";
+
 type LeadDetailsProps = {
   leadId?: number | string | null;
   onBack?: () => void;
-  onEdit?: () => void;
+  onEdit?: (leadId?: number | string | null) => void;
+  origin?: OriginType; // <-- added
 };
 
 export default function LeadDetailsPage({
   leadId,
   onBack,
   onEdit,
+  origin = "leads", // <-- default origin
 }: LeadDetailsProps): JSX.Element {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -73,24 +77,47 @@ export default function LeadDetailsPage({
   const leadIdFromQuery = searchParams.get("leadId");
   const effectiveLeadId = leadId ?? leadIdFromQuery;
 
+  // NEW: helpers to pick label / back text
+  const getConvertLabel = () => {
+    if (origin === "leads") return "Convert to Prospect";
+    if (origin === "Prospect") return "Convert to Account";
+    if (origin === "Account") return "Convert to Master Account";
+    return "Convert";
+  };
+
+  const getBackLabel = () => {
+    if (origin === "leads") return "← Back to Leads";
+    if (origin === "Prospect") return "← Back to Prospects";
+    if (origin === "Account") return "← Back to Accounts";
+    return "← Back";
+  };
+
   const handleBack = () => {
     if (onBack) {
-      // When used inside your tab-based HelloPage
       onBack();
+      return;
     } else {
-      // When opened directly as a route
-      router.push("/webpage/leads"); // <- this is your leads page
+      // route back based on origin
+      if (origin === "Prospect") {
+        router.push("/webpage?tab=prospect");
+      } else if (origin === "Account") {
+        router.push("/webpage?tab=account");
+      } else {
+        router.push("/webpage?tab=leads");
+      }
     }
   };
   const handleEdit = () => {
-    if (onEdit) {
-      // When used inside your tab-based HelloPage
-      onEdit();
-    } else {
-      // When opened directly as a route
-      router.push("/webpage/leads/addleed"); // <- this is your leads page
-    }
-  };
+  if (onEdit) {
+    onEdit(lead?.LeadId ?? effectiveLeadId ?? null);
+    return;
+  } else {
+    // route edit based on origin and include the leadId in query
+    const id = encodeURIComponent(String(effectiveLeadId));
+    const typeParam = origin ? `&type=${encodeURIComponent(origin)}` : "";
+    router.push(`/webpage/leads/Editlead?leadId=${id}${typeParam}`);
+  }
+};
 
   useEffect(() => {
     if (!effectiveLeadId) {
@@ -104,7 +131,6 @@ export default function LeadDetailsPage({
 
     (async () => {
       try {
-        // 1) Try to fetch a single lead
         const trySingle = await fetch(
           `/api/employees/leads/${encodeURIComponent(effectiveLeadId)}`
         );
@@ -113,8 +139,6 @@ export default function LeadDetailsPage({
           if (!cancelled) setLead(data);
           return;
         }
-
-        // 2) Fallback: fetch all leads and find matching one
         const res = await fetch("/api/employees/leads");
         if (!res.ok) {
           throw new Error(`Failed to fetch employees (${res.status})`);
@@ -125,8 +149,8 @@ export default function LeadDetailsPage({
         const array = Array.isArray(all)
           ? all
           : all?.data && Array.isArray(all.data)
-          ? all.data
-          : [];
+            ? all.data
+            : [];
 
         const found = array.find(
           (x: any) => String(x.LeadId) === String(effectiveLeadId)
@@ -151,7 +175,7 @@ export default function LeadDetailsPage({
     return () => {
       cancelled = true;
     };
-  }, [effectiveLeadId]);
+  }, [effectiveLeadId, origin]);
 
   // ---------- EARLY STATES ----------
 
@@ -159,7 +183,7 @@ export default function LeadDetailsPage({
     return (
       <div style={{ padding: 20 }}>
         <button onClick={handleBack} style={backBtnStyle}>
-          ← Back to Leads
+          {getBackLabel()}
         </button>
         <p style={{ marginTop: 12 }}>No lead selected.</p>
       </div>
@@ -170,7 +194,7 @@ export default function LeadDetailsPage({
     return (
       <div style={{ padding: 20 }}>
         <button onClick={handleBack} style={backBtnStyle}>
-          ← Back to Leads
+          {getBackLabel()}
         </button>
         <p style={{ marginTop: 12 }}>Loading lead {effectiveLeadId}…</p>
       </div>
@@ -181,7 +205,7 @@ export default function LeadDetailsPage({
     return (
       <div style={{ padding: 20 }}>
         <button onClick={handleBack} style={backBtnStyle}>
-          ← Back to Leads
+          {getBackLabel()}
         </button>
         <p style={{ marginTop: 12, color: "red" }}>Error: {error}</p>
       </div>
@@ -192,7 +216,7 @@ export default function LeadDetailsPage({
     return (
       <div style={{ padding: 20 }}>
         <button onClick={handleBack} style={backBtnStyle}>
-          ← Back to Leads
+          {getBackLabel()}
         </button>
         <p style={{ marginTop: 12 }}>No data found for this lead.</p>
       </div>
@@ -202,7 +226,7 @@ export default function LeadDetailsPage({
   // ---------- STYLES ----------
 
   const container: React.CSSProperties = {
-    padding: 60,
+    padding: 15,
     maxWidth: 1100,
     margin: "0 auto",
     fontFamily:
@@ -472,10 +496,10 @@ export default function LeadDetailsPage({
 
         <div style={topActions}>
           <button
-            onClick={() => alert("Convert to Prospect")}
+            onClick={() => alert(getConvertLabel())}
             style={secondaryBtn}
           >
-            Convert to Prospect
+            {getConvertLabel()}
           </button>
 
           <button onClick={handleEdit} style={primaryBtn}>

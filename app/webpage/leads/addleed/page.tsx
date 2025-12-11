@@ -92,7 +92,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 16,
-          marginTop:70
+          // marginTop:70
         }}
       >
         <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>

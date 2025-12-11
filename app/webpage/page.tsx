@@ -1,3 +1,4 @@
+// page.tsx (updated)
 "use client";
 
 import React, { useState } from "react";
@@ -10,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AddLeadPage from "./leads/addleed/page";
 import LeadDetailsPage from "./leads/Leaddetails/page";
+import EditLeadPage from "./leads/Editlead/page";
 
 // Tabs
 type TabKey =
@@ -17,10 +19,13 @@ type TabKey =
   | "dashboard"
   | "leads"
   | "addLead"
+  | "addProspect"
+  | "addAccount"
   | "Prospect"
   | "leadDetails"
   | "Account"
-  | "Remainder";
+  | "Reminder"
+  | "editLead";
 
 export default function HelloPage(): JSX.Element {
   const dispatch = useDispatch();
@@ -43,10 +48,10 @@ export default function HelloPage(): JSX.Element {
   const [selectedLeadId, setSelectedLeadId] = useState<number | string | null>(
     null
   );
-
-  // sidebar collapsed => icon-only mode
+  const [selectedLeadOrigin, setSelectedLeadOrigin] = useState<
+    "leads" | "Prospect" | "Account" | null
+  >(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
   const tabIcons: Record<TabKey, React.ReactNode> = {
     home: "",
     dashboard: (
@@ -57,9 +62,12 @@ export default function HelloPage(): JSX.Element {
       <Image src="/prospect.png" alt="Prospect" width={20} height={20} />
     ),
     Account: <Image src="/account.png" alt="Account" width={20} height={20} />,
-    Remainder: <Image src="/bell.png" alt="Remainder" width={20} height={20} />,
+    Reminder: <Image src="/bell.png" alt="Reminder" width={20} height={20} />,
     addLead: "",
     leadDetails: "",
+    addProspect: "",
+    addAccount: "",
+    editLead: "",
   };
 
   // ---- API CALLS ----
@@ -178,6 +186,7 @@ export default function HelloPage(): JSX.Element {
             onAddLead={() => setActiveTab("addLead")}
             onOpenLeadDetails={(leadId) => {
               setSelectedLeadId(leadId);
+              setSelectedLeadOrigin("leads");
               setActiveTab("leadDetails");
             }}
           />
@@ -190,7 +199,12 @@ export default function HelloPage(): JSX.Element {
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
-            onAddLead={() => setActiveTab("addLead")}
+            onAddLead={() => setActiveTab("addProspect")}
+            onOpenLeadDetails={(leadId) => {
+              setSelectedLeadId(leadId);
+              setSelectedLeadOrigin("Prospect");
+              setActiveTab("leadDetails");
+            }}
           />
         );
 
@@ -201,19 +215,52 @@ export default function HelloPage(): JSX.Element {
             employees={employeesLocal ?? employeesFromStore}
             loading={loading}
             error={error}
-            onAddLead={() => setActiveTab("addLead")}
+            onAddLead={() => setActiveTab("addAccount")}
+            onOpenLeadDetails={(leadId) => {
+              setSelectedLeadId(leadId);
+              setSelectedLeadOrigin("Account");
+              setActiveTab("leadDetails");
+            }}
           />
         );
 
       case "addLead":
-        return <AddLeadPage onBack={() => setActiveTab("leads")} />;
+        return <AddLeadPage type="lead" onBack={() => setActiveTab("leads")} />;
+
+      case "addProspect":
+        return (
+          <AddLeadPage
+            type="prospect"
+            onBack={() => setActiveTab("Prospect")}
+          />
+        );
+
+      case "addAccount":
+        return (
+          <AddLeadPage type="account" onBack={() => setActiveTab("Account")} />
+        );
 
       case "leadDetails":
         return (
           <LeadDetailsPage
             leadId={selectedLeadId}
-            onBack={() => setActiveTab("leads")}
-            onEdit={() => setActiveTab("addLead")}
+            origin={selectedLeadOrigin ?? "leads"}
+            // when back is clicked in details, return to the origin tab
+            onBack={() => setActiveTab(selectedLeadOrigin ?? "leads")}
+            // on edit — route to the appropriate add/edit page based on origin
+            onEdit={(id?: string | number | null) => {
+              if (id != null) setSelectedLeadId(id);
+              setActiveTab("editLead");
+            }}
+          />
+        );
+
+      case "editLead":
+        return (
+          <EditLeadPage
+            leadId={selectedLeadId}
+            origin={selectedLeadOrigin}
+            onBack={() => setActiveTab("leadDetails")}
           />
         );
 
@@ -238,8 +285,8 @@ export default function HelloPage(): JSX.Element {
       {/* LEFT SIDEBAR */}
       <aside
         style={{
-          width: sidebarCollapsed ? 64 : 260,
-          minWidth: sidebarCollapsed ? 64 : 260,
+          width: sidebarCollapsed ? 64 : 230,
+          minWidth: sidebarCollapsed ? 64 : 230,
           height: "100vh",
           borderRight: "1px solid #e6e6e6",
           paddingTop: sidebarCollapsed ? 16 : 18,
@@ -324,7 +371,7 @@ export default function HelloPage(): JSX.Element {
                 "leads",
                 "Prospect",
                 "Account",
-                "Remainder",
+                "Reminder",
               ] as TabKey[]
             ).map((tab) => {
               const label = tab[0].toUpperCase() + tab.slice(1);
@@ -395,7 +442,7 @@ export default function HelloPage(): JSX.Element {
       <main
         style={{
           flex: 1,
-          marginLeft: sidebarCollapsed ? 64 : 260,
+          marginLeft: sidebarCollapsed ? 64 : 230,
           height: "100vh",
           overflowY: "auto",
           padding: 0,
@@ -416,8 +463,8 @@ export default function HelloPage(): JSX.Element {
             boxSizing: "border-box",
             position: "fixed",
             top: 0,
-            left: sidebarCollapsed ? 64 : 260,
-            width: `calc(100% - ${sidebarCollapsed ? 64 : 260}px)`,
+            left: sidebarCollapsed ? 64 : 230,
+            width: `calc(100% - ${sidebarCollapsed ? 64 : 230}px)`,
             zIndex: 2,
           }}
         >
@@ -483,7 +530,9 @@ export default function HelloPage(): JSX.Element {
         </div>
 
         {/* CONTENT BODY */}
-        <div style={{ padding: 20 }}>{renderContent()}</div>
+        <div style={{ padding: 60, paddingRight: 25, paddingLeft: 30 }}>
+          {renderContent()}
+        </div>
       </main>
     </div>
   );
