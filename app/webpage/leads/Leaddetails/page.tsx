@@ -97,60 +97,74 @@ export default function LeadDetailsPage({
     EngagementModel: "",
   });
   const handleSaveActivity = async () => {
-  if (!activityForm.Mode || !activityForm.Status || !activityForm.Notes) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  try {
-    const res = await fetch(
-      `/api/employees/leads/${effectiveLeadId}/activities`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          Mode: activityForm.Mode,
-          Notes: activityForm.Notes,
-          Status: activityForm.Status,
-          ActivityDate: new Date().toISOString(),
-        }),
-      }
-    );
-
-    if (!res.ok) {
-      const err = await res.json();
-      console.error("Activity save failed:", err);
-      alert(err.error || "Failed to save activity");
+    if (!activityForm.Mode || !activityForm.Status || !activityForm.Notes) {
+      alert("Please fill all required fields");
       return;
     }
 
-    // ✅ Activity saved in DB — get DB response
-    const savedActivity = await res.json();
+    // ✅ ALWAYS derive LeadId safely
+    const leadId =
+      lead?.LeadId ??
+      (effectiveLeadId && !isNaN(Number(effectiveLeadId))
+        ? Number(effectiveLeadId)
+        : null);
 
-    // ✅ Update UI with DB-backed data
-    setLead((prev) =>
-      prev
-        ? {
+    if (!leadId) {
+      alert("Invalid Lead selected");
+      console.error("LeadId missing:", {
+        leadIdFromState: lead?.LeadId,
+        effectiveLeadId,
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `/api/employees/leads/${leadId}/activities`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            Mode: activityForm.Mode,
+            Notes: activityForm.Notes,
+            Status: activityForm.Status,
+            ActivityDate: new Date().toISOString(),
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Activity save failed:", err);
+        alert(err.error || "Failed to save activity");
+        return;
+      }
+
+      const savedActivity = await res.json();
+
+      setLead((prev) =>
+        prev
+          ? {
             ...prev,
             Activities: [...(prev.Activities || []), savedActivity],
           }
-        : prev
-    );
+          : prev
+      );
 
-    // ✅ Reset form
-    setActivityForm({
-      ActivityDate: "",
-      Mode: "",
-      Status: "",
-      Notes: "",
-    });
+      setActivityForm({
+        ActivityDate: "",
+        Mode: "",
+        Status: "",
+        Notes: "",
+      });
 
-    setShowAddActivity(false);
-  } catch (err) {
-    console.error("Frontend save error:", err);
-    alert("Unexpected error while saving activity");
-  }
-};
+      setShowAddActivity(false);
+    } catch (err) {
+      console.error("Frontend save error:", err);
+      alert("Unexpected error while saving activity");
+    }
+  };
+
 
   const handleSaveReminder = async () => {
     if (!reminderForm.ReminderDate || !reminderForm.Notes) {
@@ -225,9 +239,14 @@ export default function LeadDetailsPage({
   };
 
 
-  // Take ID from props first, else from URL (?leadId=...)
   const leadIdFromQuery = searchParams.get("leadId");
-  const effectiveLeadId = leadId ?? leadIdFromQuery;
+
+  const effectiveLeadId =
+    lead?.LeadId ??
+    (leadId ??
+      (leadIdFromQuery && !isNaN(Number(leadIdFromQuery))
+        ? Number(leadIdFromQuery)
+        : null));
 
   // NEW: helpers to pick label / back text
   const getConvertLabel = () => {
@@ -330,8 +349,6 @@ export default function LeadDetailsPage({
   };
 
 
-
-
   useEffect(() => {
     if (!effectiveLeadId) {
       setLead(null);
@@ -345,7 +362,7 @@ export default function LeadDetailsPage({
     (async () => {
       try {
         const trySingle = await fetch(
-          `/api/employees/leads/${encodeURIComponent(effectiveLeadId)}`
+          `/api/employees/leads/${Number(effectiveLeadId)}`
         );
         if (trySingle.ok) {
           const data = await trySingle.json();
@@ -836,7 +853,7 @@ export default function LeadDetailsPage({
           <tbody>
             {(lead.Activities || []).map((a, i) => (
               <tr key={i}>
-                <td style={tdStyle}>{a.ActivityDate}</td>
+                <td>{a.ActivityDate}</td>
                 <td style={tdStyle}>{a.Mode}</td>
                 <td style={tdStyle}>{a.Notes}</td>
                 <td style={tdStyle}>{a.Status}</td>
