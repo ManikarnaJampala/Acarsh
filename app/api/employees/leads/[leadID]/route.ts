@@ -3,10 +3,10 @@ import { getPool } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { leadId: string } }
+  { params }: { params: { leadID: string } }
 ) {
   try {
-    const leadId = Number(params.leadId);
+    const leadId = Number(params.leadID);
     if (isNaN(leadId)) {
       return NextResponse.json(
         { error: "Invalid LeadId" },
