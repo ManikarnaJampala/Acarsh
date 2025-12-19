@@ -160,7 +160,7 @@ ORDER BY o.CreatedOn DESC;
   } catch (error) {
     console.error("Get lead error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch lead details" },
+      { error: "Failed to fetch lead details " },
       { status: 500 }
     );
   }
