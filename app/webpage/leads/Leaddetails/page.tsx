@@ -29,6 +29,7 @@ type Opportunity = {
   Probability: string;
   Status: string;
   EngagementModel: string;
+  Technology?: string[];
 };
 
 type Lead = {
@@ -74,6 +75,14 @@ export default function LeadDetailsPage({
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [showAddReminder, setShowAddReminder] = useState(false);
   const [showAddOpportunity, setShowAddOpportunity] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<any | null>(null);
+  const [mode, setMode] = useState<"add" | "edit">("add");
+  const [currentOpportunityId, setCurrentOpportunityId] = useState<number | null>(null);
+  // removed unused `showModal` state (was causing modal-close bugs)
+
+
+
   // ---------------- FORM STATES ----------------
 
   const [activityForm, setActivityForm] = useState({
@@ -90,12 +99,122 @@ export default function LeadDetailsPage({
     Notification: "",
   });
 
+  const resetOpportunityForm = () => {
+    setOpportunityForm({
+      serviceId: "",
+      probabilityId: "",
+      statusId: "",
+      engagementId: "",
+      technologies: [],
+    });
+  };
+
+
   const [opportunityForm, setOpportunityForm] = useState({
-    Service: "",
-    Probability: "",
-    Status: "",
-    EngagementModel: "",
+    serviceId: "" as number | "",
+    statusId: "" as number | "",
+    probabilityId: "" as number | "",
+    engagementId: "" as number | "",
+    technologies: [] as number[],
   });
+
+
+  // helper to toggle technology ids
+  const toggleTechnology = (tech: number) => {
+    setOpportunityForm((prev) => ({
+      ...prev,
+      technologies: prev.technologies.includes(tech)
+        ? prev.technologies.filter((t) => t !== tech)
+        : [...prev.technologies, tech],
+    }));
+  };
+
+  const handleAddOpportunityClick = async () => {
+    // ensure we have the effective lead id
+    const id = effectiveLeadId ?? leadId;
+    if (!id) {
+      alert("Invalid Lead selected");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/employees/leads/${id}/opportunities`);
+      if (!res.ok) {
+        // if endpoint doesn't return an existing opportunity, open add mode
+        setMode("add");
+        setCurrentOpportunityId(null);
+        resetOpportunityForm();
+        setShowAddOpportunity(true);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data && data.opportunity) {
+        // EDIT MODE - populate with IDs returned by the API
+        setMode("edit");
+        setCurrentOpportunityId(data.opportunity.OpportunityId ?? null);
+        setOpportunityForm({
+          serviceId: data.opportunity.ServiceId ?? "",
+          probabilityId: data.opportunity.ProbabilityId ?? "",
+          statusId: data.opportunity.StatusId ?? "",
+          engagementId: data.opportunity.EngagementId ?? "",
+          technologies: Array.isArray(data.opportunity.technologies)
+            ? data.opportunity.technologies
+            : [],
+        });
+      } else {
+        // ADD MODE
+        setMode("add");
+        setCurrentOpportunityId(null);
+        resetOpportunityForm();
+      }
+
+      setShowAddOpportunity(true);
+    } catch (err) {
+      console.error("Failed to load opportunity for edit:", err);
+      setMode("add");
+      setCurrentOpportunityId(null);
+      resetOpportunityForm();
+      setShowAddOpportunity(true);
+    }
+  };
+
+
+  const handleTechnologyChange = (subCategoryId: number) => {
+    setOpportunityForm((prev) => ({
+      ...prev,
+      technologies: prev.technologies.includes(subCategoryId)
+        ? prev.technologies.filter((id) => id !== subCategoryId)
+        : [...prev.technologies, subCategoryId],
+    }));
+  };
+
+  const fetchLeadDetails = async () => {
+    if (!effectiveLeadId) return;
+
+    try {
+      const res = await fetch(`/api/employees/leads/${effectiveLeadId}`);
+      if (!res.ok) {
+        console.error("Failed to fetch lead details");
+        return;
+      }
+
+      const data = await res.json();
+
+      setLead({
+        ...data,
+        Contacts: data.Contacts || [],
+        Activities: data.Activities || [],
+        Reminders: data.Reminders || [],
+        Opportunities: data.Opportunities || [],
+      });
+    } catch (error) {
+      console.error("Error fetching lead details:", error);
+    }
+  };
+
+
   const handleSaveActivity = async () => {
     if (!activityForm.Mode || !activityForm.Status || !activityForm.Notes) {
       alert("Please fill all required fields");
@@ -119,19 +238,16 @@ export default function LeadDetailsPage({
     }
 
     try {
-      const res = await fetch(
-        `/api/employees/leads/${leadId}/activities`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            Mode: activityForm.Mode,
-            Notes: activityForm.Notes,
-            Status: activityForm.Status,
-            ActivityDate: new Date().toISOString(),
-          }),
-        }
-      );
+      const res = await fetch(`/api/employees/leads/${leadId}/activities`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Mode: activityForm.Mode,
+          Notes: activityForm.Notes,
+          Status: activityForm.Status,
+          ActivityDate: new Date().toISOString(),
+        }),
+      });
 
       if (!res.ok) {
         const err = await res.json();
@@ -165,110 +281,144 @@ export default function LeadDetailsPage({
     }
   };
 
+  const formatDateTime = (value?: string) => {
+    if (!value) return "—";
+
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return value;
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
 
   const handleSaveReminder = async () => {
     if (!reminderForm.ReminderDate || !reminderForm.Notes) {
-      alert("Please fill required fields");
-      return;
-    }
-
-    const res = await fetch(
-      `/api/employees/leads/${effectiveLeadId}/reminders`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reminderForm),
-      }
-    );
-
-    if (!res.ok) {
-      alert("Failed to save reminder");
-      return;
-    }
-
-    const savedReminder = await res.json();
-
-    setLead((prev) =>
-      prev
-        ? {
-          ...prev,
-          Reminders: [...(prev.Reminders || []), savedReminder],
-        }
-        : prev
-    );
-
-    setShowAddReminder(false);
-  };
-  const handleSaveOpportunity = async () => {
-    if (
-      !opportunityForm.Service ||
-      !opportunityForm.Status ||
-      !opportunityForm.Probability ||
-      !opportunityForm.EngagementModel
-    ) {
       alert("Please fill all required fields");
       return;
     }
 
-    const res = await fetch(
-      `/api/employees/leads/${effectiveLeadId}/opportunities`,
-      {
+    const leadId = lead?.LeadId;
+    if (!leadId) {
+      alert("Invalid Lead");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/employees/leads/${leadId}/reminders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(opportunityForm),
+        body: JSON.stringify({
+          ReminderDate: reminderForm.ReminderDate,
+          Notes: reminderForm.Notes,
+          Status: reminderForm.Status, // ✅ NEW
+          Notification: reminderForm.Notification,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to save reminder");
+      }
+
+      const savedReminder = await res.json();
+
+      // ✅ Update UI immediately
+      setLead((prev) =>
+        prev
+          ? {
+            ...prev,
+            Reminders: [...(prev.Reminders || []), savedReminder],
+          }
+          : prev
+      );
+
+      // Reset form
+      setReminderForm({
+        ReminderDate: "",
+        Notes: "",
+        Status: "Pending",
+        Notification: "Email",
+      });
+
+      setShowAddReminder(false);
+    } catch (err: any) {
+      alert(err.message || "Reminder save failed");
+    }
+  };
+
+  const handleSaveOpportunity = async () => {
+    const isEdit = !!currentOpportunityId;
+
+    const id = effectiveLeadId ?? leadId;
+    if (!id) {
+      alert("Invalid Lead selected");
+      return;
+    }
+
+    const res = await fetch(
+      `/api/employees/leads/${id}/opportunities`,
+      {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(isEdit && { opportunityId: currentOpportunityId }),
+          serviceId: opportunityForm.serviceId,
+          statusId: opportunityForm.statusId,
+          probabilityId: opportunityForm.probabilityId,
+          engagementId: opportunityForm.engagementId,
+          technologies: opportunityForm.technologies,
+        }),
       }
     );
 
     if (!res.ok) {
-      alert("Failed to save opportunity");
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "Failed to save opportunity");
       return;
     }
 
-    const saved = await res.json();
-
-    setLead((prev) =>
-      prev
-        ? {
-          ...prev,
-          Opportunities: [...(prev.Opportunities || []), saved],
-        }
-        : prev
-    );
-
     setShowAddOpportunity(false);
+    await fetchLeadDetails(); // refresh table
   };
+
 
 
   const leadIdFromQuery = searchParams.get("leadId");
 
   const effectiveLeadId =
     lead?.LeadId ??
-    (leadId ??
-      (leadIdFromQuery && !isNaN(Number(leadIdFromQuery))
-        ? Number(leadIdFromQuery)
-        : null));
+    leadId ??
+    (leadIdFromQuery && !isNaN(Number(leadIdFromQuery))
+      ? Number(leadIdFromQuery)
+      : null);
 
   // NEW: helpers to pick label / back text
   const getConvertLabel = () => {
-    if (!lead?.AccountTypeName) return "Convert";
+    const type = lead?.AccountTypeName ?? "Lead";
 
-    if (lead.AccountTypeName === "Lead") return "Convert to Prospect";
-    if (lead.AccountTypeName === "Prospect") return "Convert to Account";
-    if (lead.AccountTypeName === "Account") return "Convert to Master Account";
+    if (type === "Lead") return "Convert to Prospect";
+    if (type === "Prospect") return "Convert to Account";
+    if (type === "Account") return "Convert to Master Account";
 
     return "Already a Master Account";
   };
 
-  const getTargetType = () => {
-    if (!lead?.AccountTypeName) return "";
 
-    if (lead.AccountTypeName === "Lead") return "Prospect";
-    if (lead.AccountTypeName === "Prospect") return "Account";
-    if (lead.AccountTypeName === "Account") return "MasterAccount";
+  // const getTargetType = () => {
+  //   if (!lead?.AccountTypeName) return "";
 
-    return "";
-  };
+  //   if (lead.AccountTypeName === "Lead") return "Prospect";
+  //   if (lead.AccountTypeName === "Prospect") return "Account";
+  //   if (lead.AccountTypeName === "Account") return "MasterAccount";
 
+  //   return "";
+  // };
 
   const getBackLabel = () => {
     if (origin === "leads") return "← Back to Leads";
@@ -282,7 +432,6 @@ export default function LeadDetailsPage({
       onBack();
       return;
     } else {
-
       if (origin === "Prospect") {
         router.push("/webpage?tab=prospect");
       } else if (origin === "Account") {
@@ -305,48 +454,62 @@ export default function LeadDetailsPage({
 
   const handleConvert = async () => {
     if (!lead?.LeadId) {
-      alert("Lead ID not found");
-      return;
-    }
-
-    const targetType = getTargetType();
-    if (!targetType) {
-      alert("No further conversion possible");
+      alert("ID not found");
       return;
     }
 
     try {
-      const res = await fetch("/api/employees/leads", {
+      const res = await fetch(`/api/employees/leads/${lead.LeadId}/convert`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "convert",
-          leadId: lead.LeadId,
-          targetType,
-        }),
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Conversion failed");
+        let errorMessage = "Conversion failed";
+
+        try {
+          const err = await res.json();
+          errorMessage = err.error || errorMessage;
+        } catch {
+          // response was not JSON
+        }
+
+        throw new Error(errorMessage);
       }
 
-      alert(`${getConvertLabel()} successful`);
-
-      // ✅ Redirect based on NEXT LEVEL
-      if (targetType === "Prospect") {
+      // Redirect based on CURRENT stage
+      // ✅ SHOW SUCCESS POPUP
+      if (lead.AccountTypeName === "Lead") {
+        alert("Converted successfully to Prospect");
         router.push("/webpage?tab=prospect");
-      } else if (targetType === "Account") {
+      } else if (lead.AccountTypeName === "Prospect") {
+        alert("Converted successfully to Account");
         router.push("/webpage?tab=account");
-      } else if (targetType === "MasterAccount") {
+      } else if (lead.AccountTypeName === "Account") {
+        alert("Converted successfully to Master Account");
         router.push("/webpage?tab=masteraccount");
       }
-
-    } catch (error: any) {
-      console.error("Convert error:", error);
-      alert(error.message || "Failed to convert");
+    } catch (err: any) {
+      alert(err.message || "Failed to convert");
     }
   };
+
+  useEffect(() => {
+    if (!showAddOpportunity) return;
+
+    fetch("/api/masters/categories-with-subcategories")
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load technologies", err);
+      });
+  }, [showAddOpportunity]);
+
+  useEffect(() => {
+    fetchLeadDetails();
+  }, [effectiveLeadId]);
+
 
 
   useEffect(() => {
@@ -407,7 +570,7 @@ export default function LeadDetailsPage({
     };
   }, [effectiveLeadId, origin]);
 
-  //  EARLY STATES 
+  //  EARLY STATES
 
   if (!effectiveLeadId) {
     return (
@@ -441,7 +604,7 @@ export default function LeadDetailsPage({
     );
   }
 
-  // STYLES 
+  // STYLES
 
   const container: React.CSSProperties = {
     padding: 15,
@@ -661,7 +824,7 @@ export default function LeadDetailsPage({
     display: "flex",
     flexDirection: "column",
     gap: 8,
-    fontSize: 13
+    fontSize: 13,
   };
 
   const modalFooter: React.CSSProperties = {
@@ -673,10 +836,19 @@ export default function LeadDetailsPage({
 
   const inputBox: React.CSSProperties = {
     width: "100%",
-    padding: "10px",
-    borderRadius: 4,
-    border: "1px solid #ccc",
-    fontSize: 12,
+    height: 36,
+    padding: "6px 10px",
+    borderRadius: 6,
+    border: "1px solid #cbd5e1",
+    fontSize: 13,
+    background: "#fff",
+  };
+
+  const formRow3: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 16,
+    marginBottom: 16,
   };
 
   const cancelBtn: React.CSSProperties = {
@@ -696,7 +868,27 @@ export default function LeadDetailsPage({
     cursor: "pointer",
   };
 
-  // MAIN RENDER 
+  const fieldGroup: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 13,
+    fontWeight: 600,
+  };
+
+  const inputStyle: React.CSSProperties = {
+    height: 36,
+    padding: "6px 10px",
+    borderRadius: 6,
+    border: "1px solid #cbd5e1",
+    fontSize: 13,
+    width: "100%",
+  };
+
+  // MAIN RENDER
 
   return (
     <div style={container}>
@@ -712,12 +904,18 @@ export default function LeadDetailsPage({
 
         <div style={topActions}>
           <button
+
             onClick={handleConvert}
+
             style={secondaryBtn}
+
             disabled={lead.AccountTypeName === "MasterAccount"}
           >
+
             {lead.AccountTypeName === "MasterAccount"
+
               ? "Already a Master Account"
+
               : getConvertLabel()}
           </button>
 
@@ -731,7 +929,15 @@ export default function LeadDetailsPage({
 
       <div style={rowStyle}>
         <div style={cardStyle}>
-          <div style={{ ...sectionTitle, borderBottom: "1px solid #e6e6e6", paddingBottom: 8 }}>Company Information</div>
+          <div
+            style={{
+              ...sectionTitle,
+              borderBottom: "1px solid #e6e6e6",
+              paddingBottom: 8,
+            }}
+          >
+            Company Information
+          </div>
           <div style={{ marginBottom: 8 }}>
             <span style={contactRowLabel}>Company: </span>
             <span style={value}>{lead.CompanyName}</span>
@@ -778,7 +984,15 @@ export default function LeadDetailsPage({
         </div>
 
         <div style={rightCardStyle}>
-          <div style={{ ...sectionTitle, borderBottom: "1px solid #e6e6e6", paddingBottom: 8 }}>Contacts</div>
+          <div
+            style={{
+              ...sectionTitle,
+              borderBottom: "1px solid #e6e6e6",
+              paddingBottom: 8,
+            }}
+          >
+            Contacts
+          </div>
 
           {(lead.Contacts || []).map((c, idx) => (
             <div key={idx} style={contactCardStyle}>
@@ -853,7 +1067,7 @@ export default function LeadDetailsPage({
           <tbody>
             {(lead.Activities || []).map((a, i) => (
               <tr key={i}>
-                <td>{a.ActivityDate}</td>
+                <td style={tdStyle}>{formatDateTime(a.ActivityDate)}</td>
                 <td style={tdStyle}>{a.Mode}</td>
                 <td style={tdStyle}>{a.Notes}</td>
                 <td style={tdStyle}>{a.Status}</td>
@@ -917,7 +1131,7 @@ export default function LeadDetailsPage({
       {/* Lead Opportunities */}
       <div style={{ ...sectionTitle, display: "flex", alignItems: "center" }}>
         Lead Opportunities
-        <button style={addBtn} onClick={() => setShowAddOpportunity(true)}>
+        <button style={addBtn} onClick={handleAddOpportunityClick}>
           +
         </button>
       </div>
@@ -937,19 +1151,34 @@ export default function LeadDetailsPage({
               <th style={{ ...thStyle, width: 120 }}>Probability</th>
               <th style={{ ...thStyle, width: 200 }}>Status</th>
               <th style={{ ...thStyle, width: 200 }}>Engagement Model</th>
+              <th style={{ ...thStyle, width: 250 }}>Technology</th>
             </tr>
           </thead>
 
           <tbody>
-            {(lead.Opportunities || []).map((o, i) => (
-              <tr key={i}>
-                <td style={tdStyle}>{o.CreatedDate}</td>
-                <td style={tdStyle}>{o.Service}</td>
-                <td style={tdStyle}>{o.Probability}</td>
-                <td style={tdStyle}>{o.Status}</td>
-                <td style={tdStyle}>{o.EngagementModel}</td>
+            {lead.Opportunities?.[0] && (
+              <tr>
+                <td style={tdStyle}>
+                  {formatDateTime(lead.Opportunities[0].CreatedDate)}
+                </td>
+                <td style={tdStyle}>
+                  {lead.Opportunities[0].Service}
+                </td>
+                <td style={tdStyle}>
+                  {lead.Opportunities[0].Probability}
+                </td>
+                <td style={tdStyle}>
+                  {lead.Opportunities[0].Status}
+                </td>
+                <td style={tdStyle}>
+                  {lead.Opportunities[0].EngagementModel}
+                </td>
+                <td style={tdStyle}>
+                  {lead.Opportunities[0].Technology ?? "-"}
+                </td>
               </tr>
-            ))}
+            )}
+
 
             {(!lead.Opportunities || lead.Opportunities.length === 0) && (
               <tr>
@@ -1137,7 +1366,8 @@ export default function LeadDetailsPage({
       {/* -------------------- ADD OPPORTUNITY MODAL -------------------- */}
       {showAddOpportunity && (
         <div style={modalOverlay}>
-          <div style={{ ...modalBox, width: "85%", maxWidth: 1100 }}>
+          <div style={{ ...modalBox, width: "60%", maxWidth: 1100 }}>
+            {/* Header */}
             <div
               style={{
                 ...modalHeader,
@@ -1155,69 +1385,129 @@ export default function LeadDetailsPage({
               </span>
             </div>
 
+            {/* Body */}
             <div style={modalBody}>
-              <div style={{ display: "flex", gap: 20 }}>
-                <div style={{ flex: 1 }}>
+              {/* FIRST ROW - 3 COLUMNS */}
+              <div style={formRow3}>
+                <div style={fieldGroup}>
+
                   <label>Service *</label>
-                  <select style={inputBox}>
-                    <option>- - Select Service - -</option>
-                    <option>AI</option>
-                    <option>Cloud</option>
-                    <option>Data Engineering</option>
-                    <option>DevOps</option>
-                    <option>Staff Augmentation</option>
+                  <select
+                    style={inputBox}
+                    value={opportunityForm.serviceId}
+                    onChange={(e) =>
+                      setOpportunityForm({
+                        ...opportunityForm,
+                        serviceId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value="">-- Select Service --</option>
+                    <option value={1}>TalentMatch</option>
+                    <option value={2}>DevAlley</option>
+                    <option value={3}>Software Engineering</option>
+                    <option value={4}>SAAS / ERP</option>
+                    <option value={5}>Cloud</option>
+                    <option value={6}>BI</option>
+                    <option value={7}>AI</option>
+                    <option value={8}>Data Works</option>
+                  </select>
+
+                </div>
+
+                <div style={fieldGroup}>
+                  <label>Status *</label>
+                  <select
+                    style={inputBox}
+                    value={opportunityForm.statusId}
+                    onChange={(e) =>
+                      setOpportunityForm({
+                        ...opportunityForm,
+                        statusId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value="">-- Select Status --</option>
+
+                    <option value={1}>Imported / Campaign Lead</option>
+                    <option value={2}>Inbound Inquiry (Website / Event)</option>
+                    <option value={3}>Outbound Prospecting (Cold Email / LinkedIn / Call)</option>
+                    <option value={4}>Partner / Referral Lead</option>
+                    <option value={5}>Marketing Nurtured Lead</option>
                   </select>
                 </div>
 
-                <div style={{ flex: 1 }}>
-                  <label>Status *</label>
-                  <select style={inputBox}>
-                    <option>- - Select Status - -</option>
-                    <option>Engagement Model Identified</option>
-                    <option>Proposal Sent</option>
-                    <option>Negotiation</option>
-                    <option>Closed Won</option>
-                    <option>Closed Lost</option>
+
+                <div style={fieldGroup}>
+                  <label>Engagement Model *</label>
+                  <select
+                    style={inputBox}
+                    value={opportunityForm.engagementId}
+                    onChange={(e) =>
+                      setOpportunityForm({
+                        ...opportunityForm,
+                        engagementId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value="">-- Select Engagement Model --</option>
+
+                    <option value={4}>Competence Center (ODC)</option>
+                    <option value={1}>Managed Resourcing</option>
+                    <option value={2}>Project</option>
+                    <option value={3}>Shared Services</option>
+                    <option value={5}>Other</option>
                   </select>
+
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 20 }}>
-                <div style={{ flex: 1 }}>
-                  <label>Probability*</label>
-                  <div
-                    style={{
-                      border: "1px solid #ccc",
-                      borderRadius: 6,
-                      padding: 12,
-                      marginTop: 6,
-                    }}
-                  >
-                    <div>
-                      <input type="radio" name="prob" /> &nbsp; &lt;25%
-                    </div>
-                    <div style={{ marginTop: 6 }}>
-                      <input type="radio" name="prob" /> &nbsp; 50%
-                    </div>
-                    <div style={{ marginTop: 6 }}>
-                      <input type="radio" name="prob" /> &nbsp; 75%
-                    </div>
-                    <div style={{ marginTop: 6 }}>
-                      <input type="radio" name="prob" /> &nbsp; 90%
-                    </div>
-                  </div>
-                </div>
+              {/* PROBABILITY */}
+              <div style={fieldGroup}>
+                <label>Probability *</label>
 
-                {/* Engagement Model */}
-                <div style={{ flex: 1 }}>
-                  <label>Engagement Model*</label>
-                  <select style={inputBox}>
-                    <option>- - Select Engagement Model - -</option>
-                    <option>Competence Center (ODC)</option>
-                    <option>Time & Material</option>
-                    <option>Fixed Bid</option>
-                    <option>Retainer</option>
-                  </select>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    border: "1px solid #cbd5e1",
+                    borderRadius: 6,
+                    padding: "1px 12px",
+                    height: 36,
+                    marginRight: 500,
+                  }}
+                >
+                  {[
+                    { id: 1, label: "<25%" },
+                    { id: 2, label: "50%" },
+                    { id: 3, label: "75%" },
+                    { id: 4, label: "90%" },
+                  ].map((p) => (
+                    <label
+                      key={p.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 13,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="probability"
+                        checked={opportunityForm.probabilityId === p.id}
+                        onChange={() =>
+                          setOpportunityForm({
+                            ...opportunityForm,
+                            probabilityId: p.id,
+                          })
+                        }
+                      />
+                      {p.label}
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -1231,86 +1521,33 @@ export default function LeadDetailsPage({
                   borderRadius: 6,
                 }}
               >
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  {/* DEVELOPMENT STACK */}
-                  <div>
-                    <b>Development Stack</b>
-                    <div>
-                      <input type="checkbox" /> &nbsp; LAMP
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; MEAN
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; MERN
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Java Spring
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; .NET Stack
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Other
-                    </div>
-                  </div>
+                <div style={{ display: "flex", gap: 40 }}>
+                  {categories.map((cat: any) => (
+                    <div key={cat.CategoryId}>
+                      <b>{cat.CategoryName}</b>
 
-                  {/* CLOUD PLATFORMS */}
-                  <div>
-                    <b>Cloud Computing Platforms</b>
-                    <div>
-                      <input type="checkbox" /> &nbsp; AWS
+                      {cat.SubCategories.map((sc: any) => (
+                        <div key={sc.SubCategoryId} style={{ marginTop: 6 }}>
+                          <input
+                            type="checkbox"
+                            checked={opportunityForm.technologies.includes(
+                              sc.SubCategoryId
+                            )}
+                            onChange={() =>
+                              handleTechnologyChange(sc.SubCategoryId)
+                            }
+                          />
+                          &nbsp; {sc.SubCategoryName}
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Azure
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Google Cloud Platform
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; IBM Cloud
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Oracle Cloud
-                      Infrastructure
-                    </div>
-                  </div>
-
-                  {/* DATABASE TECHNOLOGIES */}
-                  <div>
-                    <b>Database Technologies</b>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Oracle Database
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; SQL Server
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; MySQL
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; PostgreSQL
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; MongoDB
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Cassandra
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Snowflake
-                    </div>
-                    <div>
-                      <input type="checkbox" /> &nbsp; Amazon Redshift
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
+
             </div>
 
-            {/* FOOTER */}
+            {/* Footer */}
             <div style={modalFooter}>
               <button
                 style={cancelBtn}
@@ -1318,7 +1555,9 @@ export default function LeadDetailsPage({
               >
                 Cancel
               </button>
-              <button style={saveBtn}>Save Opportunity</button>
+              <button style={saveBtn} onClick={handleSaveOpportunity}>
+                Save Opportunity
+              </button>
             </div>
           </div>
         </div>

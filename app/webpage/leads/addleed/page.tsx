@@ -1,14 +1,14 @@
 "use client";
-
+ 
 import React, { useState } from "react";
-
+ 
 type EntityType = "lead" | "prospect" | "account";
-
+ 
 type AddLeadPageProps = {
   onBack: () => void;
-  type?: EntityType; 
+  type?: EntityType;
 };
-
+ 
 export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps) {
   const [form, setForm] = useState({
     CompanyName: "",
@@ -16,14 +16,13 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
     LeadSource: "",
     LeadDate: "",
     StatusName: "New",
-    AccountType: "",
     OwnerName: "",
-
+ 
     // Lead / Prospect / Account Details
     ExpansionAreas: "",
     Tags: "",
     Notes: "",
-
+ 
     // Contact
     ContactName: "",
     ContactEmail: "",
@@ -32,17 +31,17 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
     ContactRoleName: "",
     ContactLocation: "",
     ContactNotes: "",
-
+ 
     // Quick Actions
     AddReminder: false,
   });
-
+ 
   // 🔹 Texts based on type
   const entityLabel: string =
     type === "prospect" ? "Prospect" : type === "account" ? "Account" : "Lead";
-
+ 
   const entityLabelLower = entityLabel.toLowerCase();
-
+ 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -55,33 +54,36 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
       [name]: type === "checkbox" ? checked : value,
     }));
   };
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+   
   if (!form.ContactRoleName) {
     alert("Please select Contact Role");
     return;
   }
-
+ 
   console.log("Submitting lead data:", form);
-
-
-    // NOTE: API is still /api/leads – you can later change for prospects/accounts if needed
-    const res = await fetch("/api/employees/leads", {
+ 
+    // Determine the API endpoint based on type
+    let endpoint = "/api/employees/leads";
+    if (type === "prospect") endpoint = "/api/employees/prospects";
+    else if (type === "account") endpoint = "/api/employees/account"; // singular route exists
+ 
+    const res = await fetch(endpoint, {
       method: "POST",
       body: JSON.stringify(form),
       headers: { "Content-Type": "application/json" },
     });
-
+ 
     if (!res.ok) {
       alert(`Failed to save ${entityLabelLower}`);
       return;
     }
-
+ 
     alert(`${entityLabel} added successfully!`);
   };
-
+ 
   return (
     <div
       style={{
@@ -90,7 +92,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
         width: "100%",
         overflowY: "auto",
         boxSizing: "border-box",
-
+ 
       }}
     >
       {/* PAGE HEADING */}
@@ -107,7 +109,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
           {/* 🔹 Dynamic heading */}
           Add New {entityLabel}
         </h2>
-
+ 
         {/* BACK BUTTON */}
         <button
           onClick={onBack}
@@ -125,12 +127,12 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
           ← Back
         </button>
       </div>
-
+ 
       <form onSubmit={handleSubmit}>
         {/* ---------------------------- COMPANY INFORMATION ---------------------------- */}
         <section style={boxWrapper}>
           <div style={boxHeader}>Company Information</div>
-
+ 
           <div style={sectionBody}>
             <div style={grid3}>
               <div>
@@ -149,7 +151,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   <option value="Infosys">Infosys</option>
                 </select>
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Company Location</label>
                 <input
@@ -161,7 +163,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Lead Source</label>
                 <select
@@ -177,7 +179,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   <option value="Referral">Referral</option>
                 </select>
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Lead Date</label>
                 <input
@@ -188,7 +190,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Lead Status</label>
                 <input
@@ -203,18 +205,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   }}
                 />
               </div>
-
-              <div>
-                <label style={labelStyle}>Account Type</label>
-                <input
-                  type="text"
-                  name="AccountType"
-                  style={inputStyle}
-                  value={form.AccountType}
-                  onChange={handleChange}
-                />
-              </div>
-
+ 
               <div>
                 <label style={labelStyle}>
                   Lead Owner <span style={{ color: "#ef4444" }}>*</span>
@@ -226,20 +217,20 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   style={inputStyle}
                 >
                   <option value="">Select Lead Owner</option>
-                  <option value="Ramesh">Ramesh</option>
-                  <option value="Suresh">Suresh</option>
-                  <option value="Anitha">Anitha</option>
+                  <option value="Partha Bommireddy (BP)">Partha Bommireddy (BP)</option>
+                  <option value="Mahesh Kukutlawar">Mahesh Kukutlawar</option>
+                  <option value="Sriram Cherukuvada">Sriram Cherukuvada</option>
                 </select>
               </div>
             </div>
           </div>
         </section>
-
+ 
         {/* ---------------------------- LEAD / PROSPECT / ACCOUNT DETAILS ---------------------------- */}
         <section style={boxWrapper}>
           {/* 🔹 Dynamic section title */}
           <div style={boxHeader}>{entityLabel} Details</div>
-
+ 
           <div style={sectionBody}>
             <div style={grid3}>
               <div>
@@ -252,7 +243,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Tags</label>
                 <input
@@ -273,7 +264,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   Separate multiple tags with commas
                 </p>
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Notes</label>
                 <textarea
@@ -287,11 +278,11 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
             </div>
           </div>
         </section>
-
+ 
         {/* ---------------------------- CONTACT ---------------------------- */}
         <section style={boxWrapper}>
           <div style={boxHeader}>Contact</div>
-
+ 
           <div style={sectionBody}>
             <div style={grid3}>
               <div>
@@ -307,7 +298,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Contact Title</label>
                 <input
@@ -319,7 +310,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>
                   Role <span style={{ color: "#ef4444" }}>*</span>
@@ -332,12 +323,12 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                 >
                   <option value="">Select role...</option>
                   <option value="Decision Maker">Decision Maker</option>
-                  <option value="Technical Lead">Technical Lead</option>
-                  <option value="Procurement">Procurement</option>
-                  <option value="Finance">Finance</option>
+                  <option value="Influencer">Influencer</option>
+                  <option value="Initiator">Initiator</option>
+                  <option value="End User">End User</option>
                 </select>
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>
                   Email <span style={{ color: "#ef4444" }}>*</span>
@@ -351,7 +342,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Phone</label>
                 <input
@@ -363,7 +354,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div>
                 <label style={labelStyle}>Contact Location</label>
                 <input
@@ -375,7 +366,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
                   onChange={handleChange}
                 />
               </div>
-
+ 
               <div style={{ gridColumn: "1 / span 3" }}>
                 <label style={labelStyle}>Contact Notes</label>
                 <textarea
@@ -389,11 +380,11 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
             </div>
           </div>
         </section>
-
+ 
         {/* ---------------------------- QUICK ACTIONS ---------------------------- */}
         <section style={boxWrapper}>
           <div style={boxHeader}>Quick Actions</div>
-
+ 
           <div style={{ padding: 20 }}>
             <label
               style={{
@@ -413,7 +404,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
             </label>
           </div>
         </section>
-
+ 
         {/* ---------------------------- BUTTONS ---------------------------- */}
         <div
           style={{
@@ -426,7 +417,7 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
           <button type="button" style={btnSecondary} onClick={onBack}>
             Cancel
           </button>
-
+ 
           {/* 🔹 Dynamic submit text */}
           <button type="submit" style={btnPrimary}>
             Create {entityLabel}
@@ -436,20 +427,20 @@ export default function AddLeadPage({ onBack, type = "lead" }: AddLeadPageProps)
     </div>
   );
 }
-
+ 
 /* ---------------------------- STYLES ---------------------------- */
-
+ 
 const labelStyle: React.CSSProperties = {
   fontSize: 13,
   fontWeight: 500,
   color: "#374151",
 };
-
+ 
 const sectionBody: React.CSSProperties = {
   padding: 20,
   overflowY: "auto",
 };
-
+ 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "8px 10px",
@@ -459,7 +450,7 @@ const inputStyle: React.CSSProperties = {
   fontSize: 13,
   boxSizing: "border-box",
 };
-
+ 
 const textareaStyle: React.CSSProperties = {
   width: "100%",
   padding: "8px 10px",
@@ -471,13 +462,13 @@ const textareaStyle: React.CSSProperties = {
   resize: "vertical",
   boxSizing: "border-box",
 };
-
+ 
 const grid3: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr 1fr",
   gap: 20,
 };
-
+ 
 const boxWrapper: React.CSSProperties = {
   marginTop: 20,
   background: "#ffffff",
@@ -486,7 +477,7 @@ const boxWrapper: React.CSSProperties = {
   padding: 0,
   border: "1px solid #e5e7eb",
 };
-
+ 
 const boxHeader: React.CSSProperties = {
   background: "#3a77e3",
   color: "#fff",
@@ -496,7 +487,7 @@ const boxHeader: React.CSSProperties = {
   borderTopRightRadius: 10,
   fontSize: 14,
 };
-
+ 
 const btnPrimary: React.CSSProperties = {
   background: "#3a77e3",
   color: "white",
@@ -507,7 +498,7 @@ const btnPrimary: React.CSSProperties = {
   cursor: "pointer",
   fontWeight: 600,
 };
-
+ 
 const btnSecondary: React.CSSProperties = {
   background: "#6b7280",
   color: "white",
@@ -518,3 +509,5 @@ const btnSecondary: React.CSSProperties = {
   cursor: "pointer",
   fontWeight: 500,
 };
+ 
+ 

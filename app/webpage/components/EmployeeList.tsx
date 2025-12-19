@@ -99,7 +99,7 @@ export default function EmployeeList({
   }, [employeesList, query]);
 
   if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
-  if (employeesList.length === 0) return <div>No leads found.</div>;
+  // if (employeesList.length === 0) return <div>No leads found.</div>;
 
   const baseFontStyles: React.CSSProperties = {
     fontFamily: "Open Sans, sans-serif",

@@ -226,6 +226,7 @@ const handleDeleteLead = async (leadId: number | string) => {
             loading={loading}
             error={error}
             onAddLead={() => setActiveTab("addProspect")}
+            onDelete={handleDeleteLead}
             onOpenLeadDetails={(leadId) => {
               setSelectedLeadId(leadId);
               setSelectedLeadOrigin("Prospect");
@@ -242,6 +243,7 @@ const handleDeleteLead = async (leadId: number | string) => {
             loading={loading}
             error={error}
             onAddLead={() => setActiveTab("addAccount")}
+            onDelete={handleDeleteLead}
             onOpenLeadDetails={(leadId) => {
               setSelectedLeadId(leadId);
               setSelectedLeadOrigin("Account");
@@ -251,19 +253,19 @@ const handleDeleteLead = async (leadId: number | string) => {
         );
 
       case "addLead":
-        return <AddLeadPage type="lead" onBack={() => setActiveTab("leads")} />;
+        return <AddLeadPage type="lead" onBack={() => handleTab("leads")} />;
 
       case "addProspect":
         return (
           <AddLeadPage
             type="prospect"
-            onBack={() => setActiveTab("Prospect")}
+            onBack={() => handleTab("Prospect")}
           />
         );
 
       case "addAccount":
         return (
-          <AddLeadPage type="account" onBack={() => setActiveTab("Account")} />
+          <AddLeadPage type="account" onBack={() => handleTab("Account")} />
         );
 
       case "leadDetails":
